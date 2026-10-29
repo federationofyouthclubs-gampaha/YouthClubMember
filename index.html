@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>නිලධාරී පද්ධතිය | Divisional Federation of YOUTH CLUBS - Gampaha </title>
+  <title>නිලධාරී පද්ධතිය | Divisional Federation of YOUTH CLUBS - Gampaha</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -199,7 +199,6 @@
 
     const BASE_PROFILE_URL = "https://federationofyouthclubs-gampaha.github.io/YouthClubMember/profile.html?id=";
 
-    // Check Member Data
     async function fetchMemberData() {
       const searchId = document.getElementById('searchId').value.trim().toUpperCase();
       const msg = document.getElementById('pointsMsg');
@@ -230,7 +229,6 @@
       
       document.getElementById('updatePosition').value = data.position || 'සාමාජික';
 
-      // Load preview card details automatically on check
       document.getElementById('cardName').innerText = data.full_name;
       document.getElementById('cardPosition').innerText = `Position: ${data.position || 'සාමාජික'}`;
       document.getElementById('cardClub').innerText = data.youth_club;
@@ -247,7 +245,6 @@
       msg.innerHTML = `<span class="text-green-600">✅ සාමාජික තොරතුරු සාර්ථකව ලබාගන්නා ලදී.</span>`;
     }
 
-    // Register Member
     document.getElementById('regForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
@@ -321,7 +318,6 @@
       readerPhoto.readAsDataURL(photoInput.files[0]);
     });
 
-    // Update Position & Points Form
     document.getElementById('pointsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const searchId = document.getElementById('searchId').value.trim().toUpperCase();
@@ -383,10 +379,8 @@
       } else {
         msg.innerHTML = `<span class="text-green-600">✅ ${data.full_name} ගේ නිළතලය හා ලකුණු සාර්ථකව යාවත්කාලීන විය! (මුළු ලකුණු: ${newPoints})</span>`;
         
-        // Update card preview position live
         document.getElementById('cardPosition').innerText = `Position: ${newPosition}`;
 
-        // Reset event fields
         document.getElementById('eventName').value = '';
         document.getElementById('eventDate').value = '';
         document.getElementById('eventDesc').value = '';
@@ -399,7 +393,6 @@
     function downloadPDF() {
       const element = document.getElementById('idCard');
       
-      // Delay slightly to ensure images/QR are fully rendered before PDF conversion
       setTimeout(() => {
         html2pdf().set({
           margin: 2,

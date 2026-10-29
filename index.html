@@ -6,7 +6,6 @@
   <title>නිලධාරී පද්ධතිය | Divisional Federation of YOUTH CLUBS - Gampaha </title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 md:p-8">
@@ -113,7 +112,7 @@
                   <p class="text-[8px] font-mono text-amber-400 font-bold mt-1" id="cardId">ID: YM-0000</p>
                 </div>
 
-                <!-- QR Code Container with white background for high contrast scanning -->
+                <!-- Crystal Clear Google QR Code Container -->
                 <div id="qrcode" class="bg-white p-1 rounded shadow flex-shrink-0 flex items-center justify-center w-[64px] h-[64px]"></div>
               </div>
 
@@ -139,7 +138,7 @@
     const SUPABASE_KEY = 'sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // නිවැරදි GitHub Pages URL එක (ඔබේ සැබෑ Repository නමට අනුකූලව YouthClubMember ලෙස සකසා ඇත)
+    // නිවැරදි GitHub Pages URL එක
     const BASE_PROFILE_URL = "https://federationofyouthclubs-gampaha.github.io/YouthClubMember/profile.html?id=";
 
     // Register Member
@@ -182,18 +181,11 @@
           document.getElementById('cardId').innerText = membershipId;
           document.getElementById('cardPhoto').src = photoBase64;
 
-          // Generate QR Code with absolute URL and correct sizing
+          // Generate Crystal Clear QR Code using Google API
           const fullProfileUrl = BASE_PROFILE_URL + encodeURIComponent(membershipId);
+          const googleQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(fullProfileUrl)}`;
           
-          document.getElementById('qrcode').innerHTML = "";
-          new QRCode(document.getElementById("qrcode"), {
-            text: fullProfileUrl,
-            width: 56,
-            height: 56,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.M
-          });
+          document.getElementById('qrcode').innerHTML = `<img src="${googleQrApiUrl}" alt="QR Code" class="w-full h-full object-contain">`;
 
           document.getElementById('resultSection').classList.remove('hidden');
           btn.innerText = "සාමාජිකයා ඇතුළත් කර ID පත සදන්න";
@@ -236,7 +228,7 @@
         .eq('membership_id', searchId);
 
       if (updateError) {
-        msg.innerHTML = `<span class="text-red-600">❌ ලකුණු යාවත්කාලීන කිරීම අසාර්ථಕයි.</span>`;
+        msg.innerHTML = `<span class="text-red-600">❌ ලකුණු යාවත්කාලීන කිරීම අසාර්ථකයි.</span>`;
       } else {
         msg.innerHTML = `<span class="text-green-600">✅ ${data.full_name} වෙත සාර්ථකව ලකුණු ${addPts} ක් එකතු විය! (මුළු ලකුණු: ${newPoints})</span>`;
       }

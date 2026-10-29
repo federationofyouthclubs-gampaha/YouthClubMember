@@ -7,52 +7,71 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 flex items-center justify-center">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-  <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-6 text-center border-t-4 border-blue-900">
-    
-    <div class="border-b pb-4 mb-4">
-      <h2 class="text-xs font-bold text-blue-900 uppercase">Divisional Federation of Youth Clubs - Gampaha</h2>
-      <p class="text-[10px] text-slate-500">Digital Member Profile</p>
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+    <!-- Header banner -->
+    <div class="bg-blue-900 text-white p-4 text-center relative">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-amber-300">Divisional Federation of Youth Clubs</h2>
+      <p class="text-xs text-slate-200">Official Member Profile</p>
     </div>
 
-    <div id="loading" class="py-10 text-slate-500 font-medium">දත්ත ලබාගනිමින් පවතී...</div>
-
-    <div id="profileContent" class="hidden space-y-4">
-      <!-- Member Photo -->
+    <!-- Profile Content -->
+    <div class="p-6 space-y-6 text-center">
+      
+      <!-- Photo -->
       <div class="flex justify-center">
-        <div class="w-28 h-36 bg-slate-200 rounded-xl border-4 border-amber-400 overflow-hidden shadow-md">
-          <img id="pPhoto" src="" alt="Photo" class="w-full h-full object-cover">
+        <div class="w-24 h-24 rounded-full border-4 border-amber-400 shadow-md overflow-hidden bg-slate-200">
+          <img id="mPhoto" src="" alt="Member Photo" class="w-full h-full object-cover">
         </div>
       </div>
 
+      <!-- Name & ID -->
       <div>
-        <h1 id="pName" class="text-lg font-bold text-slate-900">සම්පූර්ණ නම</h1>
-        <p id="pId" class="text-xs font-mono text-amber-600 font-bold">YM-0000</p>
+        <h1 id="mName" class="text-xl font-bold text-slate-900">-</h1>
+        <p id="mPosition" class="text-xs font-semibold text-amber-600 uppercase mt-0.5">සාමාජික</p>
+        <p id="mId" class="text-xs font-mono bg-blue-50 text-blue-800 inline-block px-2.5 py-1 rounded-full mt-2 font-bold">-</p>
       </div>
 
-      <!-- Details Box -->
+      <!-- Details Grid -->
       <div class="bg-slate-50 p-4 rounded-xl border text-left space-y-2 text-xs">
-        <p><strong class="text-slate-500">යෞවන සමාජය:</strong> <span id="pClub" class="font-semibold text-slate-800"></span></p>
-        <p><strong class="text-slate-500">ග්‍රාම නිලධාරී වසම:</strong> <span id="pGn" class="font-semibold text-slate-800"></span></p>
-        <p><strong class="text-slate-500">ඊමේල් ලිපිනය:</strong> <span id="pEmail" class="font-semibold text-slate-800"></span></p>
+        <p><strong class="text-slate-500">యෞවන සමාජය:</strong> <span id="mClub" class="font-semibold text-slate-800">-</span></p>
+        <p><strong class="text-slate-500">ග්‍රාම නිලධාරී වසම:</strong> <span id="mGn" class="font-semibold text-slate-800">-</span></p>
+        <p><strong class="text-slate-500">ඊමේල් ලිපිනය:</strong> <span id="mEmail" class="font-semibold text-slate-800">-</span></p>
       </div>
 
-      <!-- Points Badge -->
-      <div class="bg-blue-900 text-white p-3 rounded-xl shadow">
-        <p class="text-[10px] uppercase tracking-wider text-amber-300 font-semibold">සමස්ත ක්‍රියාකාරකම් ලකුණු (Total Points)</p>
-        <p id="pPoints" class="text-2xl font-bold">0</p>
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-blue-600 font-semibold uppercase">මුළු ලකුණු</p>
+          <p id="mPoints" class="text-base font-bold text-blue-900">0</p>
+        </div>
+        <div class="bg-indigo-50 border border-indigo-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-indigo-600 font-semibold uppercase">වැඩසටහන්</p>
+          <p id="mPrograms" class="text-base font-bold text-indigo-900">0</p>
+        </div>
+        <div class="bg-amber-50 border border-amber-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-amber-600 font-semibold uppercase">රැස්වීම්</p>
+          <p id="mMeetings" class="text-base font-bold text-amber-900">0</p>
+        </div>
       </div>
+
+      <!-- Activity History Section -->
+      <div class="text-left space-y-2 pt-2 border-t">
+        <h3 class="text-xs font-bold text-blue-900 uppercase">සහභාගී වූ වැඩසටහන් හා රැස්වීම් ඉතිහාසය</h3>
+        <div id="activityHistoryList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <p class="text-xs text-slate-400 text-center py-2">වාර්තා කිසිවක් හමු නොවීය.</p>
+        </div>
+      </div>
+
     </div>
 
-    <div id="errorContent" class="hidden py-8 text-red-600 font-semibold text-sm">
-      ❌ අදාළ සාමාජික තොරතුරු හමු නොවීය. කරුණාකර නිවැරදි සබැඳියක් භාවිතා කරන්න.
+    <div class="bg-slate-50 p-3 text-center text-[10px] text-slate-400 border-t">
+      Divisional Federation of YOUTH CLUBS - Gampaha © 2026
     </div>
-
   </div>
 
   <script>
-    // Supabase Configuration
     const SUPABASE_URL = 'https://mlnojkidgdcvxbvhaqok.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -62,35 +81,54 @@
       const memberId = urlParams.get('id');
 
       if (!memberId) {
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('errorContent').classList.remove('hidden');
+        alert("සාමාජික අංකයක් හමු නොවීය!");
         return;
       }
 
-      try {
-        const { data, error } = await supabaseClient
-          .from('youth_members')
-          .select('*')
-          .eq('membership_id', memberId)
-          .single();
+      const { data, error } = await supabaseClient
+        .from('youth_members')
+        .select('*')
+        .eq('membership_id', memberId)
+        .single();
 
-        if (error || !data) throw error;
+      if (error || !data) {
+        document.body.innerHTML = `<div class="text-center p-8"><h2 class="text-lg font-bold text-red-600">❌ සාමාජිකයා හමු නොවීය හෝ දෝෂයක් සිදු විය.</h2></div>`;
+        return;
+      }
 
-        // Populate Profile Data
-        document.getElementById('pName').innerText = data.full_name;
-        document.getElementById('pId').innerText = data.membership_id;
-        document.getElementById('pClub').innerText = data.youth_club;
-        document.getElementById('pGn').innerText = data.gn_division;
-        document.getElementById('pEmail').innerText = data.email;
-        document.getElementById('pPoints').innerText = data.points || 0;
-        if(data.photo) document.getElementById('pPhoto').src = data.photo;
+      document.getElementById('mName').innerText = data.full_name;
+      document.getElementById('mPosition').innerText = data.position || 'සාමාජික';
+      document.getElementById('mId').innerText = data.membership_id;
+      document.getElementById('mClub').innerText = data.youth_club;
+      document.getElementById('mGn').innerText = data.gn_division;
+      document.getElementById('mEmail').innerText = data.email;
+      document.getElementById('mPoints').innerText = data.points || 0;
+      document.getElementById('mPrograms').innerText = data.programs_count || 0;
+      document.getElementById('mMeetings').innerText = data.meetings_count || 0;
 
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('profileContent').classList.remove('hidden');
+      if (data.photo) {
+        document.getElementById('mPhoto').src = data.photo;
+      }
 
-      } catch (err) {
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('errorContent').classList.remove('hidden');
+      // Render Activity History
+      const historyContainer = document.getElementById('activityHistoryList');
+      const history = data.activity_history;
+
+      if (history && Array.isArray(history) && history.length > 0) {
+        historyContainer.innerHTML = "";
+        history.forEach(item => {
+          const card = document.createElement('div');
+          card.className = "bg-slate-50 border border-slate-200 p-2.5 rounded-lg text-xs space-y-1";
+          card.innerHTML = `
+            <div class="flex justify-between items-center font-bold text-blue-900">
+              <span>${item.name}</span>
+              <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">${item.type} (+${item.points} pts)</span>
+            </div>
+            <p class="text-[10px] text-slate-500">දිනය: ${item.date}</p>
+            ${item.description ? `<p class="text-[11px] text-slate-700">${item.description}</p>` : ''}
+          `;
+          historyContainer.appendChild(card);
+        });
       }
     }
 

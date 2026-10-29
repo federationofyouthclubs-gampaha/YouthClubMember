@@ -3,192 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>නිලධාරී පද්ධතිය | Divisional Federation of YOUTH CLUBS - Gampaha</title>
+  <title>සාමාජික පැතිකඩ | Divisional Federation of YOUTH CLUBS - Gampaha</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-  <div class="max-w-4xl mx-auto space-y-8">
-    
-    <!-- Top Header -->
-    <div class="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-blue-900">
-      <h1 class="text-xl md:text-2xl font-bold text-blue-900 uppercase">Divisional Federation of Youth Clubs - Gampaha</h1>
-      <p class="text-slate-600 font-medium">නිලධාරී කළමනාකරණ පද්ධතිය (Officer Admin Panel)</p>
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+    <!-- Header banner -->
+    <div class="bg-blue-900 text-white p-4 text-center relative">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-amber-300">Divisional Federation of Youth Clubs</h2>
+      <p class="text-xs text-slate-200">Official Member Profile</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Profile Content -->
+    <div class="p-6 space-y-6 text-center">
       
-      <!-- Registration & ID Generator Card -->
-      <div class="bg-white rounded-xl shadow-md p-6">
-        <h2 class="text-lg font-bold text-blue-800 mb-4 border-b pb-2">නව සාමාජිකයෙකු ලියාපදිංචි කිරීම</h2>
-        
-        <form id="regForm" class="space-y-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700">ලියාපදිංචි අංකය (Membership ID):</label>
-            <input type="text" id="membershipId" placeholder="උදා: YM-2026-1631" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm font-mono uppercase">
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700">සම්පූර්ණ නම (Full Name):</label>
-            <input type="text" id="fullName" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700">ග්‍රාම නිලධාරී වසම:</label>
-              <input type="text" id="gnDivision" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700">යෞවන සමාජය:</label>
-              <input type="text" id="youthClub" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700">ඊමේල් ලිපිනය (Email):</label>
-            <input type="email" id="email" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700">සාමාජික ඡායාරූපය (Photo):</label>
-            <input type="file" id="memberPhoto" accept="image/*" required class="w-full mt-1 p-1 border border-slate-300 rounded-lg text-xs bg-white">
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700">ID කාඩ් ලාංඡනය (Logo):</label>
-            <input type="file" id="cardLogo" accept="image/*" required class="w-full mt-1 p-1 border border-slate-300 rounded-lg text-xs bg-white">
-          </div>
-
-          <button type="submit" id="submitBtn" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg text-sm shadow transition">
-            සාමාජිකයා ඇතුළත් කර ID පත සදන්න
-          </button>
-        </form>
+      <!-- Photo -->
+      <div class="flex justify-center">
+        <div class="w-24 h-24 rounded-full border-4 border-amber-400 shadow-md overflow-hidden bg-slate-200">
+          <img id="mPhoto" src="" alt="Member Photo" class="w-full h-full object-cover">
+        </div>
       </div>
 
-      <!-- Points & Activity Management Card -->
-      <div class="bg-white rounded-xl shadow-md p-6 flex flex-col justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-blue-800 mb-4 border-b pb-2">වැඩසටහන්, නිළතල හා ලකුණු ඇතුළත් කිරීම</h2>
-          
-          <form id="pointsForm" class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700">සාමාජික අංකය (Membership ID):</label>
-              <div class="flex gap-2 mt-1">
-                <input type="text" id="searchId" placeholder="YM-2026-1631" required class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono uppercase">
-                <button type="button" onclick="fetchMemberData()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold transition">පරීක්ෂා කරන්න</button>
-              </div>
-            </div>
-
-            <!-- Current Stats Display Box -->
-            <div id="currentStatsBox" class="hidden bg-blue-50 border border-blue-200 p-3 rounded-lg text-xs space-y-1">
-              <p class="font-bold text-blue-900" id="infoName">-</p>
-              <p class="text-slate-600" id="infoPosition">-</p>
-              <div class="grid grid-cols-3 gap-2 pt-1 text-slate-700 border-t border-blue-200 mt-1">
-                <p>මුළු ලකුණු: <span id="infoPoints" class="font-bold text-blue-700">0</span></p>
-                <p>වැඩසටහන්: <span id="infoPrograms" class="font-bold text-indigo-700">0</span></p>
-                <p>රැස්වීම්: <span id="infoMeetings" class="font-bold text-amber-700">0</span></p>
-              </div>
-            </div>
-
-            <!-- Detailed Update Fields -->
-            <div class="space-y-2 pt-1 border-t">
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-700">දරන නිළතලය (Position):</label>
-                <input type="text" id="updatePosition" placeholder="උදා: සභාපති / ලේකම් / සාමාජික" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-700">වැඩසටහනේ හෝ රැස්වීමේ නම:</label>
-                <input type="text" id="eventName" placeholder="උදා: තරුණ ක්‍රීඩා උත්සවය" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-              </div>
-
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-[11px] font-semibold text-slate-700">පැවැත්වූ දිනය:</label>
-                  <input type="date" id="eventDate" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-                </div>
-                <div>
-                  <label class="block text-[11px] font-semibold text-slate-700">වර්ගය:</label>
-                  <select id="eventType" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm bg-white">
-                    <option value="program">වැඩසටහනක්</option>
-                    <option value="meeting">සම්මේලන රැස්වීමක්</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-700">විස්තරය (Description):</label>
-                <textarea id="eventDesc" rows="2" placeholder="වැඩසටහන පිළිබඳ කෙටි විස්තරයක්..." class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm"></textarea>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-700">ලබාදෙන ලකුණු ප්‍රමාණය (+ Points):</label>
-                <input type="number" id="addPoints" value="5" min="0" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-              </div>
-            </div>
-
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm shadow transition">
-              නිළතලය, විස්තර සහ ලකුණු යාවත්කාලීන කරන්න
-            </button>
-          </form>
-        </div>
-
-        <div id="pointsMsg" class="mt-3 text-xs font-medium text-center"></div>
-
-        <!-- Generated ID Preview Box -->
-        <div id="resultSection" class="hidden mt-4 pt-4 border-t text-center">
-          <p class="text-xs text-green-700 font-bold mb-2">✅ සාර්ථකයි! ID කාඩ් පත පහතින් ඩවුන්ලෝඩ් කරගන්න:</p>
-          
-          <div class="flex justify-center mb-3">
-            <!-- ID Card Container with explicit inline styles for PDF stability -->
-            <div id="idCard" style="width: 360px; height: 220px; background: #090d16; color: white; padding: 14px; border-radius: 12px; position: relative; border: 2px solid #fbbf24; display: flex; flex-direction: column; justify-content: space-between; text-align: left; box-sizing: border-box;">
-              
-              <div style="border-bottom: 1px solid rgba(96, 165, 250, 0.4); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="width: 28px; height: 28px; background: white; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                    <img id="cardLogoImg" src="" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
-                  </div>
-                  <div>
-                    <h3 style="font-size: 8px; font-weight: bold; color: #fde047; text-transform: uppercase; margin: 0;">Divisional Federation of Youth Clubs Gampaha</h3>
-                    <p style="font-size: 7px; color: #e2e8f0; text-transform: uppercase; margin: 0;">Member ID Card</p>
-                  </div>
-                </div>
-                <span style="font-size: 7px; background: #fde047; color: #0f172a; font-weight: bold; padding: 2px 6px; border-radius: 4px;">Connect 2027</span>
-              </div>
-
-              <div style="display: flex; align-items: center; justify-content: space-between; margin: 6px 0; gap: 8px;">
-                <div style="width: 70px; height: 90px; background: #cbd5e1; border-radius: 4px; border: 1px solid #fde047; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                  <img id="cardPhoto" src="" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-
-                <div style="flex: 1; overflow: hidden;">
-                  <p style="font-size: 11px; font-weight: bold; color: white; margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="cardName">Name</p>
-                  <p style="font-size: 8px; color: #cbd5e1; margin: 0 0 2px 0;"><span style="color: #fde047;">Club:</span> <span id="cardClub">Club</span></p>
-                  <p style="font-size: 8px; color: #cbd5e1; margin: 0 0 2px 0;"><span style="color: #fde047;">GN:</span> <span id="cardGn">GN</span></p>
-                  <p style="font-size: 9px; font-family: monospace; color: #fde047; font-weight: bold; margin: 4px 0 0 0;" id="cardId">ID: YM-0000</p>
-                </div>
-
-                <!-- QR Code Container -->
-                <div id="qrcode" style="background: white; padding: 4px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); flex-shrink: 0; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center;"></div>
-              </div>
-
-              <div style="border-top: 1px solid rgba(96, 165, 250, 0.4); padding-top: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 6px; color: #cbd5e1;">
-                <span>Official Digital ID</span>
-                <span>Divisional Federation of YOUTH CLUBS - Gampaha</span>
-              </div>
-            </div>
-          </div>
-
-          <button onclick="downloadPDF()" class="bg-slate-800 hover:bg-black text-white font-bold py-1.5 px-4 rounded text-xs shadow">
-            📥 PDF ලෙස ඩවුන්ලෝඩ් කරන්න (High Quality)
-          </button>
-        </div>
-
+      <!-- Name & ID -->
+      <div>
+        <h1 id="mName" class="text-xl font-bold text-slate-900">-</h1>
+        <p id="mPosition" class="text-xs font-semibold text-amber-600 uppercase mt-0.5">සාමාජික</p>
+        <p id="mId" class="text-xs font-mono bg-blue-50 text-blue-800 inline-block px-2.5 py-1 rounded-full mt-2 font-bold">-</p>
       </div>
 
+      <!-- Details Grid -->
+      <div class="bg-slate-50 p-4 rounded-xl border text-left space-y-2 text-xs">
+        <p><strong class="text-slate-500">යෞවන සමාජය:</strong> <span id="mClub" class="font-semibold text-slate-800">-</span></p>
+        <p><strong class="text-slate-500">ග්‍රාම නිලධාරී වසම:</strong> <span id="mGn" class="font-semibold text-slate-800">-</span></p>
+        <p><strong class="text-slate-500">ඊමේල් ලිපිනය:</strong> <span id="mEmail" class="font-semibold text-slate-800">-</span></p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-blue-600 font-semibold uppercase">මුළු ලකුණු</p>
+          <p id="mPoints" class="text-base font-bold text-blue-900">0</p>
+        </div>
+        <div class="bg-indigo-50 border border-indigo-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-indigo-600 font-semibold uppercase">වැඩසටහන්</p>
+          <p id="mPrograms" class="text-base font-bold text-indigo-900">0</p>
+        </div>
+        <div class="bg-amber-50 border border-amber-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-amber-600 font-semibold uppercase">රැස්වීම්</p>
+          <p id="mMeetings" class="text-base font-bold text-amber-900">0</p>
+        </div>
+      </div>
+
+      <!-- Activity History Section -->
+      <div class="text-left space-y-2 pt-2 border-t">
+        <h3 class="text-xs font-bold text-blue-900 uppercase">සහභාගී වූ වැඩසටහන් හා රැස්වීම් ඉතිහාසය</h3>
+        <div id="activityHistoryList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <p class="text-xs text-slate-400 text-center py-2">වාර්තා කිසිවක් හමු නොවීය.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bg-slate-50 p-3 text-center text-[10px] text-slate-400 border-t">
+      Divisional Federation of YOUTH CLUBS - Gampaha © 2026
     </div>
   </div>
 
@@ -197,217 +76,63 @@
     const SUPABASE_KEY = 'sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const BASE_PROFILE_URL = "https://federationofyouthclubs-gampaha.github.io/YouthClubMember/profile.html?id=";
+    async function loadProfile() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const memberId = urlParams.get('id');
 
-    function generateQRCode(text) {
-      document.getElementById('qrcode').innerHTML = "";
-      new QRCode(document.getElementById("qrcode"), {
-        text: text,
-        width: 60,
-        height: 60,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.M
-      });
-    }
-
-    async function fetchMemberData() {
-      const searchId = document.getElementById('searchId').value.trim().toUpperCase();
-      const msg = document.getElementById('pointsMsg');
-      const statsBox = document.getElementById('currentStatsBox');
-
-      if (!searchId) {
-        alert("කරුණාකර සාමාජික අංකයක් ඇතුළත් කරන්න!");
+      if (!memberId) {
+        alert("සාමාජික අංකයක් හමු නොවීය!");
         return;
       }
 
       const { data, error } = await supabaseClient
         .from('youth_members')
         .select('*')
-        .eq('membership_id', searchId)
+        .eq('membership_id', memberId)
         .single();
 
       if (error || !data) {
-        statsBox.classList.add('hidden');
-        msg.innerHTML = `<span class="text-red-600">❌ අදාළ අංකය සහිත සාමාජිකයෙකු හමු නොවීය!</span>`;
+        document.body.innerHTML = `<div class="text-center p-8"><h2 class="text-lg font-bold text-red-600">❌ සාමාජිකයා හමු නොවීය හෝ දෝෂයක් සිදු විය.</h2></div>`;
         return;
       }
 
-      document.getElementById('infoName').innerText = `නම: ${data.full_name}`;
-      document.getElementById('infoPosition').innerText = `නිළතලය: ${data.position || 'සාමාජික'}`;
-      document.getElementById('infoPoints').innerText = data.points || 0;
-      document.getElementById('infoPrograms').innerText = data.programs_count || 0;
-      document.getElementById('infoMeetings').innerText = data.meetings_count || 0;
-      
-      document.getElementById('updatePosition').value = data.position || 'සාමාජික';
+      document.getElementById('mName').innerText = data.full_name;
+      document.getElementById('mPosition').innerText = data.position || 'සාමාජික';
+      document.getElementById('mId').innerText = data.membership_id;
+      document.getElementById('mClub').innerText = data.youth_club;
+      document.getElementById('mGn').innerText = data.gn_division;
+      document.getElementById('mEmail').innerText = data.email;
+      document.getElementById('mPoints').innerText = data.points || 0;
+      document.getElementById('mPrograms').innerText = data.programs_count || 0;
+      document.getElementById('mMeetings').innerText = data.meetings_count || 0;
 
-      document.getElementById('cardName').innerText = data.full_name;
-      document.getElementById('cardClub').innerText = data.youth_club;
-      document.getElementById('cardGn').innerText = data.gn_division;
-      document.getElementById('cardId').innerText = data.membership_id;
-      if(data.photo) document.getElementById('cardPhoto').src = data.photo;
+      if (data.photo) {
+        document.getElementById('mPhoto').src = data.photo;
+      }
 
-      const fullProfileUrl = BASE_PROFILE_URL + encodeURIComponent(data.membership_id);
-      generateQRCode(fullProfileUrl);
+      // Render Activity History
+      const historyContainer = document.getElementById('activityHistoryList');
+      const history = data.activity_history;
 
-      document.getElementById('resultSection').classList.remove('hidden');
-      statsBox.classList.remove('hidden');
-      msg.innerHTML = `<span class="text-green-600">✅ සාමාජික තොරතුරු සාර්ථකව ලබාගන්නා ලදී.</span>`;
+      if (history && Array.isArray(history) && history.length > 0) {
+        historyContainer.innerHTML = "";
+        history.forEach(item => {
+          const card = document.createElement('div');
+          card.className = "bg-slate-50 border border-slate-200 p-2.5 rounded-lg text-xs space-y-1";
+          card.innerHTML = `
+            <div class="flex justify-between items-center font-bold text-blue-900">
+              <span>${item.name}</span>
+              <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">${item.type} (+${item.points} pts)</span>
+            </div>
+            <p class="text-[10px] text-slate-500">දිනය: ${item.date}</p>
+            ${item.description ? `<p class="text-[11px] text-slate-700">${item.description}</p>` : ''}
+          `;
+          historyContainer.appendChild(card);
+        });
+      }
     }
 
-    document.getElementById('regForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.innerText = "සකසමින්...";
-      btn.disabled = true;
-
-      const membershipId = document.getElementById('membershipId').value.trim().toUpperCase();
-      const fullName = document.getElementById('fullName').value;
-      const gnDivision = document.getElementById('gnDivision').value;
-      const youthClub = document.getElementById('youthClub').value;
-      const email = document.getElementById('email').value;
-      const photoInput = document.getElementById('memberPhoto');
-      const logoInput = document.getElementById('cardLogo');
-
-      const readerPhoto = new FileReader();
-      const readerLogo = new FileReader();
-
-      readerPhoto.onload = function(eventPhoto) {
-        const photoBase64 = eventPhoto.target.result;
-
-        readerLogo.onload = async function(eventLogo) {
-          const logoBase64 = eventLogo.target.result;
-
-          try {
-            const { error } = await supabaseClient
-              .from('youth_members')
-              .insert([{
-                membership_id: membershipId,
-                full_name: fullName,
-                position: 'සාමාජික',
-                gn_division: gnDivision,
-                youth_club: youthClub,
-                email: email,
-                photo: photoBase64,
-                points: 0,
-                programs_count: 0,
-                meetings_count: 0,
-                activity_history: []
-              }]);
-
-            if (error) throw error;
-
-            document.getElementById('cardName').innerText = fullName;
-            document.getElementById('cardClub').innerText = youthClub;
-            document.getElementById('cardGn').innerText = gnDivision;
-            document.getElementById('cardId').innerText = membershipId;
-            document.getElementById('cardPhoto').src = photoBase64;
-            document.getElementById('cardLogoImg').src = logoBase64;
-
-            const fullProfileUrl = BASE_PROFILE_URL + encodeURIComponent(membershipId);
-            generateQRCode(fullProfileUrl);
-
-            document.getElementById('resultSection').classList.remove('hidden');
-            btn.innerText = "සාමාජිකයා ඇතුළත් කර ID පත සදන්න";
-            btn.disabled = false;
-            alert("සාමාජිකයා සාර්ථකව ලියාපදිංචි විය!");
-
-          } catch (err) {
-            alert("දෝෂයක් සිදු විය: " + err.message);
-            btn.innerText = "සාමාජිකයා ඇතුළත් කර ID පත සදන්න";
-            btn.disabled = false;
-          }
-        };
-
-        readerLogo.readAsDataURL(logoInput.files[0]);
-      };
-
-      readerPhoto.readAsDataURL(photoInput.files[0]);
-    });
-
-    document.getElementById('pointsForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const searchId = document.getElementById('searchId').value.trim().toUpperCase();
-      const newPosition = document.getElementById('updatePosition').value.trim() || 'සාමාජික';
-      const eventName = document.getElementById('eventName').value.trim();
-      const eventDate = document.getElementById('eventDate').value;
-      const eventType = document.getElementById('eventType').value;
-      const eventDesc = document.getElementById('eventDesc').value.trim();
-      const addPts = parseInt(document.getElementById('addPoints').value) || 0;
-      const msg = document.getElementById('pointsMsg');
-
-      const { data, error } = await supabaseClient
-        .from('youth_members')
-        .select('*')
-        .eq('membership_id', searchId)
-        .single();
-
-      if (error || !data) {
-        msg.innerHTML = `<span class="text-red-600">❌ අදාළ අංකය සහිත සාමාජිකයෙකු හමු නොවීය!</span>`;
-        return;
-      }
-
-      const newPoints = (data.points || 0) + addPts;
-      let newPrograms = data.programs_count || 0;
-      let newMeetings = data.meetings_count || 0;
-      let existingHistory = data.activity_history || [];
-      if (!Array.isArray(existingHistory)) existingHistory = [];
-
-      if (eventName && eventDate) {
-        if (eventType === 'program') {
-          newPrograms += 1;
-        } else {
-          newMeetings += 1;
-        }
-
-        const newActivity = {
-          name: eventName,
-          date: eventDate,
-          type: eventType === 'program' ? 'වැඩසටහන' : 'රැස්වීම',
-          description: eventDesc,
-          points: addPts
-        };
-        existingHistory.unshift(newActivity);
-      }
-
-      const { error: updateError } = await supabaseClient
-        .from('youth_members')
-        .update({ 
-          position: newPosition,
-          points: newPoints,
-          programs_count: newPrograms,
-          meetings_count: newMeetings,
-          activity_history: existingHistory
-        })
-        .eq('membership_id', searchId);
-
-      if (updateError) {
-        msg.innerHTML = `<span class="text-red-600">❌ යාවත්කාලීන කිරීම අසාර්ථකයි: ${updateError.message}</span>`;
-      } else {
-        msg.innerHTML = `<span class="text-green-600">✅ ${data.full_name} ගේ නිළතලය හා ලකුණු සාර්ථකව යාවත්කාලීන විය! (මුළු ලකුණු: ${newPoints})</span>`;
-
-        document.getElementById('eventName').value = '';
-        document.getElementById('eventDate').value = '';
-        document.getElementById('eventDesc').value = '';
-        document.getElementById('addPoints').value = '5';
-
-        fetchMemberData();
-      }
-    });
-
-    function downloadPDF() {
-      const element = document.getElementById('idCard');
-      
-      setTimeout(() => {
-        html2pdf().from(element).set({
-          margin: 0,
-          filename: 'Youth_ID.pdf',
-          image: { type: 'jpeg', quality: 1.0 },
-          html2canvas: { scale: 3, useCORS: true, letterRendering: true, allowTaint: true },
-          jsPDF: { unit: 'mm', format: [95, 60], orientation: 'landscape' }
-        }).save();
-      }, 600);
-    }
+    loadProfile();
   </script>
 </body>
 </html>

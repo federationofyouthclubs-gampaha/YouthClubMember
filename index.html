@@ -200,9 +200,24 @@
 
     const BASE_PROFILE_URL = "https://federationofyouthclubs-gampaha.github.io/YouthClubMember/profile.html?id=";
 
-    function setQRCode(url) {
-      const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
-      document.getElementById('cardQrImg').src = qrApi;
+    // QR එක data URL එකක් ලෙස ගන්නවා (PDF capture එකේදී cross-origin ප්‍රශ්න නැති වෙන්න)
+    async function setQRCode(url) {
+      const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data=${encodeURIComponent(url)}`;
+      const img = document.getElementById('cardQrImg');
+      try {
+        const res = await fetch(qrApi);
+        const blob = await res.blob();
+        const dataUrl = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = reject;
+          r.readAsDataURL(blob);
+        });
+        img.src = dataUrl;
+      } catch (e) {
+        img.crossOrigin = 'anonymous';
+        img.src = qrApi; // fallback
+      }
     }
 
     async function fetchMemberData() {
@@ -413,109 +428,56 @@
     }
 
     async function downloadPDF() {
-      const originalCard = document.getElementById('idCard');
-      const downloadButton = document.querySelector(
-        '#resultSection button[onclick="downloadPDF()"]'
-      );
+      const card = document.getElementById('idCard');
+      const btn = document.querySelector('#resultSection button[onclick="downloadPDF()"]');
 
-      if (!originalCard || document.getElementById('resultSection').classList.contains('hidden')) {
+      if (document.getElementById('resultSection').classList.contains('hidden')) {
         alert('මුලින්ම සාමාජිකයාගේ ID Card එක generate කරන්න.');
         return;
       }
-
       if (typeof window.html2pdf !== 'function') {
-        alert('PDF library එක load වී නැහැ. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කර පිටුව නැවත load කරන්න.');
+        alert('PDF library එක load වී නැහැ. පිටුව නැවත load කරන්න.');
         return;
       }
 
-      const oldButtonText = downloadButton ? downloadButton.innerText : '';
-      let exportCard = null;
+      const oldText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = 'PDF සකසමින්...';
 
       try {
-        if (downloadButton) {
-          downloadButton.disabled = true;
-          downloadButton.innerText = 'PDF සකසමින්...';
-        }
+        // සියලු images load වෙනකම් ඉන්න
+        await Promise.all(Array.from(card.querySelectorAll('img')).map(img => waitForImage(img)));
 
-        // Make a separate, fixed-size copy so the screen layout does not affect the PDF.
-        exportCard = originalCard.cloneNode(true);
-        exportCard.id = 'idCardPdfExport';
-        exportCard.style.width = '360px';
-        exportCard.style.height = '220px';
-        exportCard.style.minWidth = '360px';
-        exportCard.style.maxWidth = '360px';
-        exportCard.style.margin = '0';
-        exportCard.style.position = 'fixed';
-        // Keep the export copy inside the visible viewport; html2canvas can
-        // render blank canvases when the source element is far off-screen.
-        exportCard.style.left = '0';
-        exportCard.style.top = '0';
-        exportCard.style.zIndex = '2147483647';
-        exportCard.style.pointerEvents = 'none';
-        exportCard.style.display = 'flex';
-        exportCard.style.visibility = 'visible';
-        exportCard.style.opacity = '1';
-        exportCard.style.boxSizing = 'border-box';
-        exportCard.style.overflow = 'hidden';
-        document.body.appendChild(exportCard);
+        window.scrollTo(0, 0); // scroll offset ප්‍රශ්නය නැති කරන්න
 
-        const images = Array.from(exportCard.querySelectorAll('img'));
-        const imageResults = await Promise.all(images.map(waitForImage));
-
-        // If the QR image has not loaded, try loading it again before export.
-        const qrImg = exportCard.querySelector('#cardQrImg');
-        if (qrImg && (!qrImg.complete || qrImg.naturalWidth === 0)) {
-          const originalQr = document.getElementById('cardQrImg');
-          if (originalQr && originalQr.src) {
-            qrImg.src = originalQr.src + (originalQr.src.includes('?') ? '&' : '?') + 'retry=' + Date.now();
-            await waitForImage(qrImg, 15000);
-          }
-        }
-
-        await new Promise(resolve => requestAnimationFrame(() =>
-          requestAnimationFrame(resolve)
-        ));
+        const id = (document.getElementById('cardId').innerText || 'Member')
+          .replace(/[^a-zA-Z0-9_-]/g, '_');
 
         const options = {
           margin: 0,
-          filename: 'Youth_ID_' +
-            ((document.getElementById('cardId').innerText || 'Member').replace(/[^a-zA-Z0-9_-]/g, '_')) +
-            '.pdf',
+          filename: `Youth_ID_${id}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: {
-            scale: 3,
+            scale: 4,
             useCORS: true,
-            allowTaint: false,
             backgroundColor: '#090d16',
-            logging: false,
-            width: 360,
-            height: 220,
-            windowWidth: 400,
             scrollX: 0,
-            scrollY: 0
+            scrollY: 0,
+            width: 360,
+            height: 220
           },
-          jsPDF: {
-            unit: 'mm',
-            format: [95.25, 58.21],
-            orientation: 'landscape',
-            compress: true
-          },
-          pagebreak: { mode: [] }
+          jsPDF: { unit: 'px', format: [360, 220], orientation: 'landscape', hotfixes: ['px_scaling'] },
+          pagebreak: { mode: 'avoid-all' }
         };
 
-        await window.html2pdf().set(options).from(exportCard).save();
-      } catch (error) {
-        console.error('PDF download error:', error);
-        alert(
-          'PDF එක සෑදීමට නොහැකි වුණා. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න. ' +
-          (error && error.message ? error.message : '')
-        );
+        // clone එකක් නැතුව කෙලින්ම original card එකම දෙන්න
+        await window.html2pdf().set(options).from(card).save();
+      } catch (err) {
+        console.error(err);
+        alert('PDF එක සෑදීමට නොහැකි වුණා: ' + (err.message || ''));
       } finally {
-        if (exportCard && exportCard.parentNode) exportCard.parentNode.removeChild(exportCard);
-        if (downloadButton) {
-          downloadButton.disabled = false;
-          downloadButton.innerText = oldButtonText || '📥 PDF ලෙස ඩවුන්ලෝඩ් කරන්න (High Quality)';
-        }
+        btn.disabled = false;
+        btn.innerText = oldText;
       }
     }
   </script>

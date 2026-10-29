@@ -389,52 +389,47 @@
       }
     });
 
-    // Wait for images inside the ID card to load before creating the PDF.
-    async function waitForCardImages(element) {
-      const images = Array.from(element.querySelectorAll('img'));
+    // Wait until card images finish loading (or fail) before PDF capture.
+    function waitForImage(img, timeoutMs = 12000) {
+      return new Promise((resolve) => {
+        if (img.complete && img.naturalWidth > 0) return resolve(true);
 
-      await Promise.all(images.map((img) => {
-        if (img.complete) return Promise.resolve();
+        let finished = false;
+        const finish = (loaded) => {
+          if (finished) return;
+          finished = true;
+          clearTimeout(timer);
+          img.removeEventListener('load', onLoad);
+          img.removeEventListener('error', onError);
+          resolve(loaded);
+        };
+        const onLoad = () => finish(img.naturalWidth > 0);
+        const onError = () => finish(false);
+        const timer = setTimeout(() => finish(false), timeoutMs);
 
-        return new Promise((resolve) => {
-          let finished = false;
-
-          const finish = () => {
-            if (finished) return;
-            finished = true;
-            img.removeEventListener('load', finish);
-            img.removeEventListener('error', finish);
-            resolve();
-          };
-
-          img.addEventListener('load', finish, { once: true });
-          img.addEventListener('error', finish, { once: true });
-
-          // Avoid waiting indefinitely for a remote image.
-          setTimeout(finish, 10000);
-        });
-      }));
+        img.addEventListener('load', onLoad);
+        img.addEventListener('error', onError);
+      });
     }
 
     async function downloadPDF() {
-      const element = document.getElementById('idCard');
+      const originalCard = document.getElementById('idCard');
       const downloadButton = document.querySelector(
         '#resultSection button[onclick="downloadPDF()"]'
       );
 
-      if (!element) {
-        alert('ID කාඩ් පත හමු නොවීය. කරුණාකර සාමාජික තොරතුරු නැවත ලබාගන්න.');
+      if (!originalCard || document.getElementById('resultSection').classList.contains('hidden')) {
+        alert('මුලින්ම සාමාජිකයාගේ ID Card එක generate කරන්න.');
         return;
       }
 
       if (typeof window.html2pdf !== 'function') {
-        alert('PDF පුස්තකාලය load වී නැත. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කර පිටුව නැවත පූරණය කරන්න.');
+        alert('PDF library එක load වී නැහැ. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කර පිටුව නැවත load කරන්න.');
         return;
       }
 
-      const originalButtonText = downloadButton
-        ? downloadButton.innerText
-        : '';
+      const oldButtonText = downloadButton ? downloadButton.innerText : '';
+      let exportCard = null;
 
       try {
         if (downloadButton) {
@@ -442,51 +437,80 @@
           downloadButton.innerText = 'PDF සකසමින්...';
         }
 
-        // Wait for member photo, logo and QR code to finish loading.
-        await waitForCardImages(element);
+        // Make a separate, fixed-size copy so the screen layout does not affect the PDF.
+        exportCard = originalCard.cloneNode(true);
+        exportCard.id = 'idCardPdfExport';
+        exportCard.style.width = '360px';
+        exportCard.style.height = '220px';
+        exportCard.style.minWidth = '360px';
+        exportCard.style.maxWidth = '360px';
+        exportCard.style.margin = '0';
+        exportCard.style.position = 'fixed';
+        exportCard.style.left = '-10000px';
+        exportCard.style.top = '0';
+        exportCard.style.display = 'flex';
+        exportCard.style.visibility = 'visible';
+        exportCard.style.opacity = '1';
+        exportCard.style.boxSizing = 'border-box';
+        exportCard.style.overflow = 'hidden';
+        document.body.appendChild(exportCard);
 
-        // Let the browser paint the final card before capturing it.
-        await new Promise((resolve) => requestAnimationFrame(() => {
-          requestAnimationFrame(resolve);
-        }));
+        const images = Array.from(exportCard.querySelectorAll('img'));
+        const imageResults = await Promise.all(images.map(waitForImage));
+
+        // If the QR image has not loaded, try loading it again before export.
+        const qrImg = exportCard.querySelector('#cardQrImg');
+        if (qrImg && (!qrImg.complete || qrImg.naturalWidth === 0)) {
+          const originalQr = document.getElementById('cardQrImg');
+          if (originalQr && originalQr.src) {
+            qrImg.src = originalQr.src + (originalQr.src.includes('?') ? '&' : '?') + 'retry=' + Date.now();
+            await waitForImage(qrImg, 15000);
+          }
+        }
+
+        await new Promise(resolve => requestAnimationFrame(() =>
+          requestAnimationFrame(resolve)
+        ));
 
         const options = {
           margin: 0,
-          filename: 'Youth_ID.pdf',
-          image: {
-            type: 'jpeg',
-            quality: 1.0
-          },
+          filename: 'Youth_ID_' +
+            ((document.getElementById('cardId').innerText || 'Member').replace(/[^a-zA-Z0-9_-]/g, '_')) +
+            '.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
           html2canvas: {
             scale: 3,
             useCORS: true,
             allowTaint: false,
-            letterRendering: true,
             backgroundColor: '#090d16',
-            logging: false
+            logging: false,
+            width: 360,
+            height: 220,
+            windowWidth: 400,
+            scrollX: 0,
+            scrollY: 0
           },
           jsPDF: {
             unit: 'mm',
-            format: [95, 60],
-            orientation: 'landscape'
-          }
+            format: [95.25, 58.21],
+            orientation: 'landscape',
+            compress: true
+          },
+          pagebreak: { mode: [] }
         };
 
-        await window.html2pdf()
-          .set(options)
-          .from(element)
-          .save();
-
+        await window.html2pdf().set(options).from(exportCard).save();
       } catch (error) {
         console.error('PDF download error:', error);
         alert(
-          'PDF එක සෑදීමේදී දෝෂයක් සිදු විය. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න. ' +
+          'PDF එක සෑදීමට නොහැකි වුණා. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න. ' +
           (error && error.message ? error.message : '')
         );
       } finally {
+        if (exportCard && exportCard.parentNode) exportCard.parentNode.removeChild(exportCard);
         if (downloadButton) {
           downloadButton.disabled = false;
-          downloadButton.innerText = originalButtonText;
+          downloadButton.innerText = oldButtonText || '📥 PDF ලෙස ඩවුන්ලෝඩ් කරන්න (High Quality)';
         }
       }
     }

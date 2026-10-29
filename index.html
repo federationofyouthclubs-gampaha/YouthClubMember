@@ -142,8 +142,8 @@
           <p class="text-xs text-green-700 font-bold mb-2">✅ සාර්ථකයි! ID කාඩ් පත පහතින් ඩවුන්ලෝඩ් කරගන්න:</p>
           
           <div class="flex justify-center mb-3">
-            <!-- ID Card Container with fixed high quality layout -->
-            <div id="idCard" class="w-[360px] h-[220px] bg-gradient-to-r from-blue-950 to-indigo-950 text-white p-3.5 rounded-xl shadow-lg relative border-2 border-amber-400 flex flex-col justify-between text-left box-border">
+            <!-- ID Card Container -->
+            <div id="idCard" style="width: 360px; height: 220px;" class="bg-gradient-to-r from-blue-950 to-indigo-950 text-white p-3.5 rounded-xl shadow-lg relative border-2 border-amber-400 flex flex-col justify-between text-left box-border">
               
               <div class="border-b border-blue-400/40 pb-1 flex justify-between items-center">
                 <div class="flex items-center space-x-2">
@@ -171,7 +171,7 @@
                   <p class="text-[8px] font-mono text-amber-400 font-bold mt-1" id="cardId">ID: YM-0000</p>
                 </div>
 
-                <!-- Crystal Clear Google QR Code Container -->
+                <!-- QR Code Container -->
                 <div id="qrcode" class="bg-white p-1 rounded shadow flex-shrink-0 flex items-center justify-center w-[72px] h-[72px]"></div>
               </div>
 
@@ -230,6 +230,19 @@
       
       document.getElementById('updatePosition').value = data.position || 'සාමාජික';
 
+      // Load preview card details automatically on check
+      document.getElementById('cardName').innerText = data.full_name;
+      document.getElementById('cardPosition').innerText = `Position: ${data.position || 'සාමාජික'}`;
+      document.getElementById('cardClub').innerText = data.youth_club;
+      document.getElementById('cardGn').innerText = data.gn_division;
+      document.getElementById('cardId').innerText = data.membership_id;
+      if(data.photo) document.getElementById('cardPhoto').src = data.photo;
+
+      const fullProfileUrl = BASE_PROFILE_URL + encodeURIComponent(data.membership_id);
+      const googleQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fullProfileUrl)}`;
+      document.getElementById('qrcode').innerHTML = `<img src="${googleQrApiUrl}" alt="QR Code" class="w-full h-full object-contain">`;
+
+      document.getElementById('resultSection').classList.remove('hidden');
       statsBox.classList.remove('hidden');
       msg.innerHTML = `<span class="text-green-600">✅ සාමාජික තොරතුරු සාර්ථකව ලබාගන්නා ලදී.</span>`;
     }
@@ -278,7 +291,7 @@
             if (error) throw error;
 
             document.getElementById('cardName').innerText = fullName;
-            document.getElementById('cardPosition').innerText = 'සාමාජික';
+            document.getElementById('cardPosition').innerText = 'Position: සාමාජික';
             document.getElementById('cardClub').innerText = youthClub;
             document.getElementById('cardGn').innerText = gnDivision;
             document.getElementById('cardId').innerText = membershipId;
@@ -385,13 +398,17 @@
 
     function downloadPDF() {
       const element = document.getElementById('idCard');
-      html2pdf().set({
-        margin: 2,
-        filename: 'Youth_ID.pdf',
-        image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 4, useCORS: true, letterRendering: true },
-        jsPDF: { unit: 'mm', format: 'a6', orientation: 'landscape' }
-      }).from(element).save();
+      
+      // Delay slightly to ensure images/QR are fully rendered before PDF conversion
+      setTimeout(() => {
+        html2pdf().set({
+          margin: 2,
+          filename: 'Youth_ID.pdf',
+          image: { type: 'jpeg', quality: 1.0 },
+          html2canvas: { scale: 4, useCORS: true, letterRendering: true, allowTaint: true },
+          jsPDF: { unit: 'mm', format: 'a6', orientation: 'landscape' }
+        }).from(element).save();
+      }, 500);
     }
   </script>
 </body>

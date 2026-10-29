@@ -63,26 +63,53 @@
       </div>
 
       <!-- Points Management Card -->
-      <div class="bg-white rounded-xl shadow-md p-6 flex flex-col justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-blue-800 mb-4 border-b pb-2">සාමාජිකයින්ට ලකුණු ලබා දීම</h2>
-          
-          <form id="pointsForm" class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700">සාමාජික අංකය (Membership ID):</label>
-              <input type="text" id="searchId" placeholder="YM-2026-1631" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm font-mono uppercase">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-700">එකතු කළ යුතු ලකුණු ප්‍රමාණය (+ Points):</label>
-              <input type="number" id="addPoints" value="5" min="1" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
-            </div>
-
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm shadow transition">
-              ලකුණු යාවත්කාලීන කරන්න
-            </button>
-          </form>
+<!-- Points Management Card -->
+<div class="bg-white rounded-xl shadow-md p-6 flex flex-col justify-between">
+  <div>
+    <h2 class="text-lg font-bold text-blue-800 mb-4 border-b pb-2">සාමාජිකයින්ට ලකුණු හා දත්ත ලබා දීම</h2>
+    
+    <form id="pointsForm" class="space-y-3">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700">සාමාජික අංකය (Membership ID):</label>
+        <div class="flex gap-2 mt-1">
+          <input type="text" id="searchId" placeholder="YM-2026-1631" required class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono uppercase">
+          <button type="button" onclick="fetchMemberData()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold transition">පරීක්ෂා කරන්න</button>
         </div>
+      </div>
+
+      <!-- Current Stats Display Box (ඇඩ්මින්ට දැනට ඇති විස්තර බලා ගැනීමට) -->
+      <div id="currentStatsBox" class="hidden bg-blue-50 border border-blue-200 p-3 rounded-lg text-xs space-y-1">
+        <p class="font-bold text-blue-900" id="infoName">-</p>
+        <div class="grid grid-cols-3 gap-2 pt-1 text-slate-700">
+          <p>මුළු ලකුණු: <span id="infoPoints" class="font-bold text-blue-700">0</span></p>
+          <p>වැඩසටහන්: <span id="infoPrograms" class="font-bold text-indigo-700">0</span></p>
+          <p>රැස්වීම්: <span id="infoMeetings" class="font-bold text-amber-700">0</span></p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 pt-2">
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-700">එකතු කළ යුතු ලකුණු (+):</label>
+          <input type="number" id="addPoints" value="0" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-700">වැඩසටහන් (+):</label>
+          <input type="number" id="addPrograms" value="0" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-700">රැස්වීම් (+):</label>
+          <input type="number" id="addMeetings" value="0" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm">
+        </div>
+      </div>
+
+      <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm shadow transition">
+        දත්ත හා ලකුණු යාවත්කාලීන කරන්න
+      </button>
+    </form>
+  </div>
+
+  <div id="pointsMsg" class="mt-4 text-xs font-medium text-center"></div>
+</div>
 
         <div id="pointsMsg" class="mt-4 text-xs font-medium text-center"></div>
 
@@ -134,6 +161,82 @@
   </div>
 
   <script>
+
+// සාමාජිකයාගේ දැනට ඇති දත්ත බලාගැනීම සඳහා
+async function fetchMemberData() {
+  const searchId = document.getElementById('searchId').value.trim().toUpperCase();
+  const msg = document.getElementById('pointsMsg');
+  const statsBox = document.getElementById('currentStatsBox');
+
+  if (!searchId) {
+    alert("කරුණාකර සාමාජික අංකයක් ඇතුළත් කරන්න!");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from('youth_members')
+    .select('full_name, points, programs_count, meetings_count')
+    .eq('membership_id', searchId)
+    .single();
+
+  if (error || !data) {
+    statsBox.classList.add('hidden');
+    msg.innerHTML = `<span class="text-red-600">❌ අදාළ අංකය සහිත සාමාජිකයෙකු හමු නොවීය!</span>`;
+    return;
+  }
+
+  // Display current stats in admin panel
+  document.getElementById('infoName').innerText = `නම: ${data.full_name}`;
+  document.getElementById('infoPoints').innerText = data.points || 0;
+  document.getElementById('infoPrograms').innerText = data.programs_count || 0;
+  document.getElementById('infoMeetings').innerText = data.meetings_count || 0;
+  
+  statsBox.classList.remove('hidden');
+  msg.innerHTML = `<span class="text-green-600">✅ සාමාජික තොරතුරු සාර්ථකව ලබාගන්නා ලදී.</span>`;
+}
+
+// ලකුණු සහ දත්ත යාවත්කාලීන කිරීමේ (Update) කොටස
+document.getElementById('pointsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const searchId = document.getElementById('searchId').value.trim().toUpperCase();
+  const addPts = parseInt(document.getElementById('addPoints').value) || 0;
+  const addProg = parseInt(document.getElementById('addPrograms').value) || 0;
+  const addMeet = parseInt(document.getElementById('addMeetings').value) || 0;
+  const msg = document.getElementById('pointsMsg');
+
+  const { data, error } = await supabaseClient
+    .from('youth_members')
+    .select('points, programs_count, meetings_count, full_name')
+    .eq('membership_id', searchId)
+    .single();
+
+  if (error || !data) {
+    msg.innerHTML = `<span class="text-red-600">❌ අදාළ අංකය සහිත සාමාජිකයෙකු හමු නොවීය!</span>`;
+    return;
+  }
+
+  const newPoints = (data.points || 0) + addPts;
+  const newPrograms = (data.programs_count || 0) + addProg;
+  const newMeetings = (data.meetings_count || 0) + addMeet;
+
+  const { error: updateError } = await supabaseClient
+    .from('youth_members')
+    .update({ 
+      points: newPoints,
+      programs_count: newPrograms,
+      meetings_count: newMeetings
+    })
+    .eq('membership_id', searchId);
+
+  if (updateError) {
+    msg.innerHTML = `<span class="text-red-600">❌ දත්ත යාවත්කාලීන කිරීම අසාර්ථකයි.</span>`;
+  } else {
+    msg.innerHTML = `<span class="text-green-600">✅ ${data.full_name} වෙත සාර්ථකව ලකුණු සහ දත්ත එකතු විය! (නව මුළු ලකුණු: ${newPoints})</span>`;
+    // Update display box values instantly
+    fetchMemberData();
+  }
+});
+
     const SUPABASE_URL = 'https://mlnojkidgdcvxbvhaqok.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);

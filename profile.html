@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>සාමාජික පැතිකඩ | Gampaha Youth Federation</title>
+  <title>සාමාජික පැතිකඩ | Divisional Federation of YOUTH CLUBS - Gampaha</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -33,7 +33,7 @@
 
       <!-- Details Box -->
       <div class="bg-slate-50 p-4 rounded-xl border text-left space-y-2 text-xs">
-        <p><strong class="text-slate-500">ಯෞවන සමාජය:</strong> <span id="pClub" class="font-semibold text-slate-800"></span></p>
+        <p><strong class="text-slate-500">යෞවන සමාජය:</strong> <span id="pClub" class="font-semibold text-slate-800"></span></p>
         <p><strong class="text-slate-500">ග්‍රාම නිලධාරී වසම:</strong> <span id="pGn" class="font-semibold text-slate-800"></span></p>
         <p><strong class="text-slate-500">ඊමේල් ලිපිනය:</strong> <span id="pEmail" class="font-semibold text-slate-800"></span></p>
       </div>
@@ -52,8 +52,9 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://mlnojkidgcvxbvhaqok.supabase.co';
-    const SUPABASE_KEY = 'ඔබේ_පබ්ලිෂබල්_කේතය_මෙහි_දමන්න';
+    // Supabase Configuration
+    const SUPABASE_URL = 'https://mlnojkidgdcvxbvhaqok.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function loadProfile() {
@@ -75,6 +76,7 @@
 
         if (error || !data) throw error;
 
+        // Populate Profile Data
         document.getElementById('pName').innerText = data.full_name;
         document.getElementById('pId').innerText = data.membership_id;
         document.getElementById('pClub').innerText = data.youth_club;

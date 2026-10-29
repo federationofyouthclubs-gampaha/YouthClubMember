@@ -389,18 +389,106 @@
       }
     });
 
-    function downloadPDF() {
+    // Wait for images inside the ID card to load before creating the PDF.
+    async function waitForCardImages(element) {
+      const images = Array.from(element.querySelectorAll('img'));
+
+      await Promise.all(images.map((img) => {
+        if (img.complete) return Promise.resolve();
+
+        return new Promise((resolve) => {
+          let finished = false;
+
+          const finish = () => {
+            if (finished) return;
+            finished = true;
+            img.removeEventListener('load', finish);
+            img.removeEventListener('error', finish);
+            resolve();
+          };
+
+          img.addEventListener('load', finish, { once: true });
+          img.addEventListener('error', finish, { once: true });
+
+          // Avoid waiting indefinitely for a remote image.
+          setTimeout(finish, 10000);
+        });
+      }));
+    }
+
+    async function downloadPDF() {
       const element = document.getElementById('idCard');
-      
-      setTimeout(() => {
-        html2pdf().from(element).set({
+      const downloadButton = document.querySelector(
+        '#resultSection button[onclick="downloadPDF()"]'
+      );
+
+      if (!element) {
+        alert('ID කාඩ් පත හමු නොවීය. කරුණාකර සාමාජික තොරතුරු නැවත ලබාගන්න.');
+        return;
+      }
+
+      if (typeof window.html2pdf !== 'function') {
+        alert('PDF පුස්තකාලය load වී නැත. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කර පිටුව නැවත පූරණය කරන්න.');
+        return;
+      }
+
+      const originalButtonText = downloadButton
+        ? downloadButton.innerText
+        : '';
+
+      try {
+        if (downloadButton) {
+          downloadButton.disabled = true;
+          downloadButton.innerText = 'PDF සකසමින්...';
+        }
+
+        // Wait for member photo, logo and QR code to finish loading.
+        await waitForCardImages(element);
+
+        // Let the browser paint the final card before capturing it.
+        await new Promise((resolve) => requestAnimationFrame(() => {
+          requestAnimationFrame(resolve);
+        }));
+
+        const options = {
           margin: 0,
           filename: 'Youth_ID.pdf',
-          image: { type: 'jpeg', quality: 1.0 },
-          html2canvas: { scale: 3, useCORS: true, letterRendering: true, allowTaint: true },
-          jsPDF: { unit: 'mm', format: [95, 60], orientation: 'landscape' }
-        }).save();
-      }, 600);
+          image: {
+            type: 'jpeg',
+            quality: 1.0
+          },
+          html2canvas: {
+            scale: 3,
+            useCORS: true,
+            allowTaint: false,
+            letterRendering: true,
+            backgroundColor: '#090d16',
+            logging: false
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: [95, 60],
+            orientation: 'landscape'
+          }
+        };
+
+        await window.html2pdf()
+          .set(options)
+          .from(element)
+          .save();
+
+      } catch (error) {
+        console.error('PDF download error:', error);
+        alert(
+          'PDF එක සෑදීමේදී දෝෂයක් සිදු විය. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න. ' +
+          (error && error.message ? error.message : '')
+        );
+      } finally {
+        if (downloadButton) {
+          downloadButton.disabled = false;
+          downloadButton.innerText = originalButtonText;
+        }
+      }
     }
   </script>
 </body>

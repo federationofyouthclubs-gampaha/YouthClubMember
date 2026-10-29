@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>සාමාජික පැතිකඩ | Gampaha Youth Federation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 flex items-center justify-center">
+
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-6 text-center border-t-4 border-blue-900">
+    
+    <div class="border-b pb-4 mb-4">
+      <h2 class="text-xs font-bold text-blue-900 uppercase">Divisional Federation of Youth Clubs - Gampaha</h2>
+      <p class="text-[10px] text-slate-500">නිල ඩිජිටල් සාමාජික පැතිකඩ</p>
+    </div>
+
+    <div id="loading" class="py-10 text-slate-500 font-medium">දත්ත ලබාගනිමින් පවතී...</div>
+
+    <div id="profileContent" class="hidden space-y-4">
+      <!-- Member Photo -->
+      <div class="flex justify-center">
+        <div class="w-28 h-36 bg-slate-200 rounded-xl border-4 border-amber-400 overflow-hidden shadow-md">
+          <img id="pPhoto" src="" alt="Photo" class="w-full h-full object-cover">
+        </div>
+      </div>
+
+      <div>
+        <h1 id="pName" class="text-lg font-bold text-slate-900">සම්පූර්ණ නම</h1>
+        <p id="pId" class="text-xs font-mono text-amber-600 font-bold">YM-0000</p>
+      </div>
+
+      <!-- Details Box -->
+      <div class="bg-slate-50 p-4 rounded-xl border text-left space-y-2 text-xs">
+        <p><strong class="text-slate-500">ಯෞවන සමාජය:</strong> <span id="pClub" class="font-semibold text-slate-800"></span></p>
+        <p><strong class="text-slate-500">ග්‍රාම නිලධාරී වසම:</strong> <span id="pGn" class="font-semibold text-slate-800"></span></p>
+        <p><strong class="text-slate-500">ඊමේල් ලිපිනය:</strong> <span id="pEmail" class="font-semibold text-slate-800"></span></p>
+      </div>
+
+      <!-- Points Badge -->
+      <div class="bg-blue-900 text-white p-3 rounded-xl shadow">
+        <p class="text-[10px] uppercase tracking-wider text-amber-300 font-semibold">සමස්ත ක්‍රියාකාරකම් ලකුණු (Total Points)</p>
+        <p id="pPoints" class="text-2xl font-bold">0</p>
+      </div>
+    </div>
+
+    <div id="errorContent" class="hidden py-8 text-red-600 font-semibold text-sm">
+      ❌ අදාළ සාමාජික තොරතුරු හමු නොවීය. කරුණාකර නිවැරදි සබැඳියක් භාවිතා කරන්න.
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://mlnojkidgcvxbvhaqok.supabase.co';
+    const SUPABASE_KEY = 'ඔබේ_පබ්ලිෂබල්_කේතය_මෙහි_දමන්න';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadProfile() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const memberId = urlParams.get('id');
+
+      if (!memberId) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorContent').classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('youth_members')
+          .select('*')
+          .eq('membership_id', memberId)
+          .single();
+
+        if (error || !data) throw error;
+
+        document.getElementById('pName').innerText = data.full_name;
+        document.getElementById('pId').innerText = data.membership_id;
+        document.getElementById('pClub').innerText = data.youth_club;
+        document.getElementById('pGn').innerText = data.gn_division;
+        document.getElementById('pEmail').innerText = data.email;
+        document.getElementById('pPoints').innerText = data.points || 0;
+        if(data.photo) document.getElementById('pPhoto').src = data.photo;
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('profileContent').classList.remove('hidden');
+
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorContent').classList.remove('hidden');
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

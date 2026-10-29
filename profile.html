@@ -1,690 +1,138 @@
-
 <!DOCTYPE html>
 <html lang="si">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta name="theme-color" content="#172554">
-  <meta name="description" content="Divisional Federation of Youth Clubs - Gampaha Member Profile">
-
-  <title>සාමාජික පැතිකඩ | Youth Clubs Gampaha</title>
-
-  <!-- Tailwind CSS -->
+  <title>සාමාජික පැතිකඩ | Divisional Federation of YOUTH CLUBS - Gampaha</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Supabase JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    body {
-      font-family: "Noto Sans Sinhala", "Iskoola Pota",
-        "Segoe UI", sans-serif;
-    }
-
-    .profile-card {
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(15px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .photo-ring {
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      padding: 4px;
-    }
-
-    .history-card {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .history-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(15, 23, 42, 0.07);
-    }
-
-    .loading-spinner {
-      width: 35px;
-      height: 35px;
-      border: 4px solid #dbeafe;
-      border-top-color: #1d4ed8;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    [hidden] {
-      display: none !important;
-    }
-  </style>
 </head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-<body class="min-h-screen bg-slate-100 text-slate-800 px-3 py-6 sm:p-8">
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+    <!-- Header banner -->
+    <div class="bg-blue-900 text-white p-4 text-center relative">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-amber-300">Divisional Federation of Youth Clubs</h2>
+      <p class="text-xs text-slate-200">Official Member Profile</p>
+    </div>
 
-  <main class="mx-auto max-w-md">
-
-    <!-- Main Profile Card -->
-    <section class="profile-card overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-
-      <!-- Header -->
-      <header class="relative overflow-hidden bg-blue-950 px-5 py-6 text-center text-white">
-
-        <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-blue-800 opacity-40"></div>
-        <div class="absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-indigo-700 opacity-30"></div>
-
-        <div class="relative z-10">
-          <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-amber-300/50 bg-white/10 text-2xl">
-            🌟
-          </div>
-
-          <h1 class="text-sm font-extrabold uppercase tracking-wide text-amber-300 sm:text-base">
-            Divisional Federation of Youth Clubs
-          </h1>
-
-          <p class="mt-1 text-xs text-blue-100">
-            Gampaha District
-          </p>
-
-          <div class="mx-auto mt-3 h-1 w-16 rounded-full bg-amber-400"></div>
-
-          <p class="mt-3 text-xs font-medium text-slate-200">
-            නිල සාමාජික පැතිකඩ
-          </p>
+    <!-- Profile Content -->
+    <div class="p-6 space-y-6 text-center">
+      
+      <!-- Photo -->
+      <div class="flex justify-center">
+        <div class="w-24 h-24 rounded-full border-4 border-amber-400 shadow-md overflow-hidden bg-slate-200">
+          <img id="mPhoto" src="" alt="Member Photo" class="w-full h-full object-cover">
         </div>
-      </header>
-
-      <!-- Loading State -->
-      <div id="loadingState" class="px-6 py-12 text-center">
-        <div class="loading-spinner"></div>
-        <p class="mt-4 text-sm font-semibold text-slate-600">
-          සාමාජික තොරතුරු ලබාගනිමින් පවතී...
-        </p>
       </div>
 
-      <!-- Error State -->
-      <div id="errorState" class="px-6 py-10 text-center" hidden>
-        <div class="text-4xl">⚠️</div>
-
-        <h2 id="errorTitle" class="mt-3 text-lg font-bold text-red-600">
-          තොරතුරු ලබාගත නොහැක
-        </h2>
-
-        <p id="errorMessage" class="mt-2 text-sm leading-6 text-slate-600">
-          කරුණාකර නැවත උත්සාහ කරන්න.
-        </p>
-
-        <button
-          id="retryButton"
-          type="button"
-          class="mt-5 rounded-xl bg-blue-900 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800"
-        >
-          නැවත උත්සාහ කරන්න
-        </button>
+      <!-- Name & ID -->
+      <div>
+        <h1 id="mName" class="text-xl font-bold text-slate-900">-</h1>
+        <p id="mPosition" class="text-xs font-semibold text-amber-600 uppercase mt-0.5">සාමාජික</p>
+        <p id="mId" class="text-xs font-mono bg-blue-50 text-blue-800 inline-block px-2.5 py-1 rounded-full mt-2 font-bold">-</p>
       </div>
 
-      <!-- Profile Content -->
-      <div id="profileContent" class="space-y-6 p-5 sm:p-6" hidden>
+      <!-- Details Grid -->
+      <div class="bg-slate-50 p-4 rounded-xl border text-left space-y-2 text-xs">
+        <p><strong class="text-slate-500">యෞවන සමාජය:</strong> <span id="mClub" class="font-semibold text-slate-800">-</span></p>
+        <p><strong class="text-slate-500">ග්‍රාම නිලධාරී වසම:</strong> <span id="mGn" class="font-semibold text-slate-800">-</span></p>
+        <p><strong class="text-slate-500">ඊමේල් ලිපිනය:</strong> <span id="mEmail" class="font-semibold text-slate-800">-</span></p>
+      </div>
 
-        <!-- Photo -->
-        <div class="text-center">
-          <div class="photo-ring mx-auto h-28 w-28 rounded-full shadow-lg">
-            <img
-              id="mPhoto"
-              src="https://placehold.co/200x200/e2e8f0/475569?text=Member"
-              alt="සාමාජික ඡායාරූපය"
-              class="h-full w-full rounded-full border-4 border-white bg-slate-100 object-cover"
-              referrerpolicy="no-referrer"
-            >
-          </div>
-
-          <div class="mt-4">
-            <h2
-              id="mName"
-              class="break-words text-xl font-extrabold text-slate-900 sm:text-2xl"
-            >
-              -
-            </h2>
-
-            <p
-              id="mPosition"
-              class="mt-1 text-sm font-bold text-amber-600"
-            >
-              සාමාජික
-            </p>
-
-            <div class="mt-3">
-              <span class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-900">
-                <span>🪪</span>
-                ID:
-                <span id="mId">-</span>
-              </span>
-            </div>
-
-            <div class="mt-3">
-              <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
-                <span class="h-2 w-2 rounded-full bg-green-500"></span>
-                සාමාජික තොරතුරු
-              </span>
-            </div>
-          </div>
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-blue-600 font-semibold uppercase">මුළු ලකුණු</p>
+          <p id="mPoints" class="text-base font-bold text-blue-900">0</p>
         </div>
-
-        <!-- Member Details -->
-        <section class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-
-          <h3 class="mb-4 flex items-center gap-2 text-sm font-extrabold text-blue-950">
-            <span>👤</span>
-            සාමාජික තොරතුරු
-          </h3>
-
-          <div class="space-y-4">
-
-            <div>
-              <p class="text-xs text-slate-500">
-                යෞවන සමාජය
-              </p>
-              <p id="mClub" class="mt-1 break-words text-sm font-bold text-slate-800">
-                -
-              </p>
-            </div>
-
-            <div class="border-t border-slate-200"></div>
-
-            <div>
-              <p class="text-xs text-slate-500">
-                ග්‍රාම නිලධාරී වසම
-              </p>
-              <p id="mGn" class="mt-1 break-words text-sm font-bold text-slate-800">
-                -
-              </p>
-            </div>
-
-            <div class="border-t border-slate-200"></div>
-
-            <div>
-              <p class="text-xs text-slate-500">
-                ඊමේල් ලිපිනය
-              </p>
-              <p id="mEmail" class="mt-1 break-all text-sm font-semibold text-slate-800">
-                -
-              </p>
-            </div>
-
-          </div>
-        </section>
-
-        <!-- Statistics -->
-        <section>
-          <h3 class="mb-3 text-sm font-extrabold text-blue-950">
-            🏆 සාමාජික දායකත්වය
-          </h3>
-
-          <div class="grid grid-cols-3 gap-2">
-
-            <div class="rounded-xl border border-blue-100 bg-blue-50 p-3 text-center">
-              <div class="text-xl">⭐</div>
-              <p class="mt-2 text-[10px] font-semibold text-blue-700">
-                මුළු ලකුණු
-              </p>
-              <p id="mPoints" class="mt-1 break-words text-xl font-extrabold text-blue-950">
-                0
-              </p>
-            </div>
-
-            <div class="rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-center">
-              <div class="text-xl">🎯</div>
-              <p class="mt-2 text-[10px] font-semibold text-indigo-700">
-                වැඩසටහන්
-              </p>
-              <p id="mPrograms" class="mt-1 break-words text-xl font-extrabold text-indigo-950">
-                0
-              </p>
-            </div>
-
-            <div class="rounded-xl border border-amber-100 bg-amber-50 p-3 text-center">
-              <div class="text-xl">🤝</div>
-              <p class="mt-2 text-[10px] font-semibold text-amber-700">
-                රැස්වීම්
-              </p>
-              <p id="mMeetings" class="mt-1 break-words text-xl font-extrabold text-amber-950">
-                0
-              </p>
-            </div>
-
-          </div>
-        </section>
-
-        <!-- Activity History -->
-        <section class="border-t border-slate-200 pt-5">
-
-          <div class="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-sm font-extrabold text-blue-950">
-                📋 සහභාගීත්ව ඉතිහාසය
-              </h3>
-
-              <p class="mt-1 text-xs text-slate-500">
-                වැඩසටහන් හා රැස්වීම් වාර්තා
-              </p>
-            </div>
-
-            <span
-              id="historyCount"
-              class="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-800"
-            >
-              0
-            </span>
-          </div>
-
-          <div
-            id="activityHistoryList"
-            class="max-h-72 space-y-3 overflow-y-auto pr-1"
-          >
-            <p class="py-5 text-center text-xs text-slate-400">
-              වාර්තා ලබාගනිමින් පවතී...
-            </p>
-          </div>
-
-        </section>
-
-        <!-- Print Button -->
-        <button
-          id="printButton"
-          type="button"
-          class="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 transition hover:bg-blue-100"
-        >
-          <span>🖨️</span>
-          පැතිකඩ මුද්‍රණය කරන්න
-        </button>
-
+        <div class="bg-indigo-50 border border-indigo-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-indigo-600 font-semibold uppercase">වැඩසටහන්</p>
+          <p id="mPrograms" class="text-base font-bold text-indigo-900">0</p>
+        </div>
+        <div class="bg-amber-50 border border-amber-100 p-2.5 rounded-xl text-center">
+          <p class="text-[9px] text-amber-600 font-semibold uppercase">රැස්වීම්</p>
+          <p id="mMeetings" class="text-base font-bold text-amber-900">0</p>
+        </div>
       </div>
 
-      <!-- Footer -->
-      <footer class="border-t border-slate-200 bg-slate-50 px-4 py-4 text-center">
-        <p class="text-[10px] font-semibold text-slate-500">
-          Divisional Federation of Youth Clubs - Gampaha
-        </p>
+      <!-- Activity History Section -->
+      <div class="text-left space-y-2 pt-2 border-t">
+        <h3 class="text-xs font-bold text-blue-900 uppercase">සහභාගී වූ වැඩසටහන් හා රැස්වීම් ඉතිහාසය</h3>
+        <div id="activityHistoryList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <p class="text-xs text-slate-400 text-center py-2">වාර්තා කිසිවක් හමු නොවීය.</p>
+        </div>
+      </div>
 
-        <p class="mt-1 text-[10px] text-slate-400">
-          © 2026 | Youth Leadership • Unity • Development
-        </p>
-      </footer>
+    </div>
 
-    </section>
-
-    <p class="mt-4 text-center text-xs text-slate-500">
-      ගම්පහ ප්‍රාදේශීය යෞවන සමාජ සම්මේලනය
-    </p>
-
-  </main>
+    <div class="bg-slate-50 p-3 text-center text-[10px] text-slate-400 border-t">
+      Divisional Federation of YOUTH CLUBS - Gampaha © 2026
+    </div>
+  </div>
 
   <script>
-    "use strict";
-
-    // ==========================================
-    // 1. SUPABASE CONFIGURATION
-    // ==========================================
-
-    const SUPABASE_URL =
-      "https://mlnojkidgdcvxbvhaqok.supabase.co";
-
-    const SUPABASE_KEY =
-      "sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W";
-
-    // ==========================================
-    // 2. INITIALIZE SUPABASE
-    // ==========================================
-
-    let supabaseClient = null;
-
-    try {
-      if (window.supabase && window.supabase.createClient) {
-        supabaseClient = window.supabase.createClient(
-          SUPABASE_URL,
-          SUPABASE_KEY
-        );
-      }
-    } catch (error) {
-      console.error("Supabase initialization error:", error);
-    }
-
-    // ==========================================
-    // 3. ELEMENT HELPERS
-    // ==========================================
-
-    function getElement(id) {
-      return document.getElementById(id);
-    }
-
-    function setText(id, value, fallback = "-") {
-      const element = getElement(id);
-
-      if (!element) return;
-
-      if (value === null || value === undefined || value === "") {
-        element.textContent = fallback;
-      } else {
-        element.textContent = String(value);
-      }
-    }
-
-    function showState(state) {
-      getElement("loadingState").hidden = state !== "loading";
-      getElement("errorState").hidden = state !== "error";
-      getElement("profileContent").hidden = state !== "success";
-    }
-
-    function showError(title, message) {
-      setText("errorTitle", title);
-      setText("errorMessage", message);
-      showState("error");
-    }
-
-    // ==========================================
-    // 4. SAFE IMAGE HANDLING
-    // ==========================================
-
-    const defaultPhoto =
-      "https://placehold.co/200x200/e2e8f0/475569?text=Member";
-
-    getElement("mPhoto").addEventListener("error", function () {
-      if (this.src !== defaultPhoto) {
-        this.src = defaultPhoto;
-      }
-    });
-
-    function setMemberPhoto(photoUrl) {
-      const image = getElement("mPhoto");
-
-      image.src = defaultPhoto;
-
-      if (!photoUrl || typeof photoUrl !== "string") {
-        return;
-      }
-
-      try {
-        const parsedUrl = new URL(photoUrl);
-
-        if (parsedUrl.protocol === "https:") {
-          image.src = parsedUrl.href;
-        }
-      } catch (error) {
-        console.warn("Invalid member photo URL.");
-      }
-    }
-
-    // ==========================================
-    // 5. FORMAT NUMBERS
-    // ==========================================
-
-    function formatNumber(value) {
-      const number = Number(value ?? 0);
-
-      if (!Number.isFinite(number)) {
-        return "0";
-      }
-
-      return number.toLocaleString("en-US");
-    }
-
-    // ==========================================
-    // 6. ACTIVITY HISTORY
-    // ==========================================
-
-    function renderActivityHistory(history) {
-      const container = getElement("activityHistoryList");
-
-      container.replaceChildren();
-
-      const validHistory = Array.isArray(history)
-        ? history
-        : [];
-
-      setText("historyCount", validHistory.length);
-
-      if (validHistory.length === 0) {
-        const emptyMessage = document.createElement("p");
-
-        emptyMessage.className =
-          "rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-xs text-slate-400";
-
-        emptyMessage.textContent =
-          "සහභාගීත්ව වාර්තා කිසිවක් තවමත් නොමැත.";
-
-        container.appendChild(emptyMessage);
-        return;
-      }
-
-      validHistory.forEach(function (item) {
-        const card = document.createElement("article");
-
-        card.className =
-          "history-card rounded-xl border border-slate-200 bg-white p-3";
-
-        const header = document.createElement("div");
-
-        header.className =
-          "flex items-start justify-between gap-2";
-
-        const title = document.createElement("h4");
-
-        title.className =
-          "break-words text-xs font-bold text-blue-950";
-
-        title.textContent =
-          item && item.name ? String(item.name) : "නම් නොකළ වැඩසටහන";
-
-        const badge = document.createElement("span");
-
-        badge.className =
-          "shrink-0 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-800";
-
-        const activityPoints = Number(item?.points ?? 0);
-
-        badge.textContent =
-          (item?.type ? String(item.type) : "වැඩසටහන") +
-          " (+" +
-          (Number.isFinite(activityPoints) ? activityPoints : 0) +
-          " pts)";
-
-        header.appendChild(title);
-        header.appendChild(badge);
-
-        const date = document.createElement("p");
-
-        date.className = "mt-2 text-[10px] text-slate-500";
-
-        date.textContent =
-          "දිනය: " +
-          (item?.date ? String(item.date) : "සඳහන් කර නැත");
-
-        card.appendChild(header);
-        card.appendChild(date);
-
-        if (item?.description) {
-          const description = document.createElement("p");
-
-          description.className =
-            "mt-2 whitespace-pre-wrap break-words text-xs leading-5 text-slate-700";
-
-          description.textContent = String(item.description);
-
-          card.appendChild(description);
-        }
-
-        container.appendChild(card);
-      });
-    }
-
-    // ==========================================
-    // 7. LOAD MEMBER PROFILE
-    // ==========================================
+    const SUPABASE_URL = 'https://mlnojkidgdcvxbvhaqok.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function loadProfile() {
-      showState("loading");
+      const urlParams = new URLSearchParams(window.location.search);
+      const memberId = urlParams.get('id');
 
-      if (!supabaseClient) {
-        showError(
-          "සම්බන්ධතාව ආරම්භ කළ නොහැක",
-          "Supabase සේවාව ආරම්භ කිරීමට නොහැකි විය. අන්තර්ජාල සම්බන්ධතාව සහ JavaScript පුස්තකාලය පරීක්ෂා කරන්න."
-        );
-
+      if (!memberId) {
+        alert("සාමාජික අංකයක් හමු නොවීය!");
         return;
       }
 
-      const urlParams = new URLSearchParams(
-        window.location.search
-      );
+      const { data, error } = await supabaseClient
+        .from('youth_members')
+        .select('*')
+        .eq('membership_id', memberId)
+        .single();
 
-      const memberId = urlParams.get("id");
-
-      if (!memberId || !memberId.trim()) {
-        showError(
-          "සාමාජික අංකයක් හමු නොවීය",
-          "මෙම පිටුවට අදාළ සාමාජික අංකය URL එකේ නොමැත. නිවැරදි සාමාජික සබැඳිය භාවිත කරන්න."
-        );
-
+      if (error || !data) {
+        document.body.innerHTML = `<div class="text-center p-8"><h2 class="text-lg font-bold text-red-600">❌ සාමාජිකයා හමු නොවීය හෝ දෝෂයක් සිදු විය.</h2></div>`;
         return;
       }
 
-      try {
-        const { data, error } = await supabaseClient
-          .from("youth_members")
-          .select(
-            "membership_id, full_name, position, youth_club, gn_division, email, points, programs_count, meetings_count, photo, activity_history"
-          )
-          .eq("membership_id", memberId.trim())
-          .maybeSingle();
+      document.getElementById('mName').innerText = data.full_name;
+      document.getElementById('mPosition').innerText = data.position || 'සාමාජික';
+      document.getElementById('mId').innerText = data.membership_id;
+      document.getElementById('mClub').innerText = data.youth_club;
+      document.getElementById('mGn').innerText = data.gn_division;
+      document.getElementById('mEmail').innerText = data.email;
+      document.getElementById('mPoints').innerText = data.points || 0;
+      document.getElementById('mPrograms').innerText = data.programs_count || 0;
+      document.getElementById('mMeetings').innerText = data.meetings_count || 0;
 
-        if (error) {
-          console.error("Supabase query error:", error);
+      if (data.photo) {
+        document.getElementById('mPhoto').src = data.photo;
+      }
 
-          showError(
-            "දත්ත ලබාගැනීමේ දෝෂයක්",
-            "සාමාජික තොරතුරු ලබාගත නොහැකි විය. දත්ත වගුව, අවසර සැකසුම් සහ අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කරන්න."
-          );
+      // Render Activity History
+      const historyContainer = document.getElementById('activityHistoryList');
+      const history = data.activity_history;
 
-          return;
-        }
-
-        if (!data) {
-          showError(
-            "සාමාජිකයා හමු නොවීය",
-            "ඔබ ලබාදුන් සාමාජික අංකයට අදාළ තොරතුරු හමු නොවීය. සාමාජික අංකය නිවැරදිදැයි පරීක්ෂා කරන්න."
-          );
-
-          return;
-        }
-
-        // Display member information
-        setText("mName", data.full_name, "නම සඳහන් කර නැත");
-        setText("mPosition", data.position, "සාමාජික");
-        setText("mId", data.membership_id);
-        setText("mClub", data.youth_club, "සඳහන් කර නැත");
-        setText("mGn", data.gn_division, "සඳහන් කර නැත");
-        setText("mEmail", data.email, "සඳහන් කර නැත");
-
-        setText("mPoints", formatNumber(data.points));
-        setText("mPrograms", formatNumber(data.programs_count));
-        setText("mMeetings", formatNumber(data.meetings_count));
-
-        setMemberPhoto(data.photo);
-
-        renderActivityHistory(data.activity_history);
-
-        showState("success");
-
-      } catch (error) {
-        console.error("Unexpected profile error:", error);
-
-        showError(
-          "අනපේක්ෂිත දෝෂයක්",
-          "පැතිකඩ පෙන්වීමට නොහැකි විය. පිටුව නැවත පූරණය කර උත්සාහ කරන්න."
-        );
+      if (history && Array.isArray(history) && history.length > 0) {
+        historyContainer.innerHTML = "";
+        history.forEach(item => {
+          const card = document.createElement('div');
+          card.className = "bg-slate-50 border border-slate-200 p-2.5 rounded-lg text-xs space-y-1";
+          card.innerHTML = `
+            <div class="flex justify-between items-center font-bold text-blue-900">
+              <span>${item.name}</span>
+              <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">${item.type} (+${item.points} pts)</span>
+            </div>
+            <p class="text-[10px] text-slate-500">දිනය: ${item.date}</p>
+            ${item.description ? `<p class="text-[11px] text-slate-700">${item.description}</p>` : ''}
+          `;
+          historyContainer.appendChild(card);
+        });
       }
     }
-
-    // ==========================================
-    // 8. RETRY BUTTON
-    // ==========================================
-
-    getElement("retryButton").addEventListener(
-      "click",
-      loadProfile
-    );
-
-    // ==========================================
-    // 9. PRINT PROFILE
-    // ==========================================
-
-    getElement("printButton").addEventListener(
-      "click",
-      function () {
-        window.print();
-      }
-    );
-
-    // ==========================================
-    // 10. PRINT STYLES
-    // ==========================================
-
-    const printStyles = document.createElement("style");
-
-    printStyles.textContent = `
-      @media print {
-        body {
-          background: white !important;
-          padding: 0 !important;
-        }
-
-        main {
-          max-width: 100% !important;
-        }
-
-        .profile-card {
-          box-shadow: none !important;
-          border: 1px solid #ddd !important;
-        }
-
-        #printButton,
-        #retryButton,
-        #loadingState,
-        #errorState {
-          display: none !important;
-        }
-
-        #profileContent {
-          display: block !important;
-        }
-
-        .history-card {
-          break-inside: avoid;
-        }
-      }
-    `;
-
-    document.head.appendChild(printStyles);
-
-    // ==========================================
-    // 11. START
-    // ==========================================
 
     loadProfile();
   </script>
-
 </body>
 </html>

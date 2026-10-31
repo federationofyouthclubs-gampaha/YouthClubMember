@@ -8,268 +8,227 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style type="text/tailwindcss">
   .i{@apply w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm bg-white}
   .l{@apply block text-xs font-semibold text-slate-700 mt-2}
-  .b{@apply font-bold py-2 px-4 rounded-lg text-sm shadow text-white transition}
-  .tab{@apply px-4 py-2 rounded-lg text-sm font-bold bg-white text-blue-900 shadow}
+  .b{@apply font-bold py-2 px-4 rounded-lg text-sm shadow text-white transition disabled:opacity-50}
   .card{@apply bg-white rounded-xl shadow-md p-5}
 </style>
 </head>
-<!-- body එකේ ඉහළටම -->
-<div id="loginBox" class="card max-w-sm mx-auto hidden">
-  <h2 class="font-bold text-blue-900 mb-2">නිලධාරී Login</h2>
+<body class="bg-slate-100 text-slate-800 min-h-screen p-3 md:p-6">
+
+<!-- Login -->
+<div id="loginBox" class="card max-w-sm mx-auto mt-16 hidden">
+  <h2 class="font-bold text-blue-900 text-lg mb-1">නිලධාරී Login</h2>
+  <p class="text-xs text-slate-500 mb-2">Divisional Federation of Youth Clubs - Gampaha</p>
   <input id="lEmail" type="email" placeholder="Email" class="i">
-  <input id="lPass" type="password" placeholder="Password" class="i">
-  <button onclick="login()" class="b bg-blue-700 w-full mt-3">ඇතුල් වන්න</button>
+  <input id="lPass" type="password" placeholder="Password" class="i" onkeydown="if(event.key==='Enter')login()">
+  <button onclick="login()" class="b bg-blue-700 hover:bg-blue-800 w-full mt-3">ඇතුල් වන්න</button>
+  <p id="lMsg" class="text-xs text-red-600 mt-2 text-center"></p>
 </div>
 
-<body class="bg-slate-100 text-slate-800 min-h-screen p-3 md:p-8">
-<div class="max-w-5xl mx-auto space-y-5">
+<div id="app" class="max-w-6xl mx-auto space-y-6 hidden">
 
-  <div class="card text-center border-t-4 border-blue-900">
-    <h1 class="text-xl font-bold text-blue-900 uppercase">Divisional Federation of Youth Clubs - Gampaha</h1>
+  <div class="card text-center border-t-4 border-blue-900 relative">
+    <h1 class="text-xl md:text-2xl font-bold text-blue-900 uppercase">Divisional Federation of Youth Clubs - Gampaha</h1>
     <p class="text-slate-600 text-sm">නිලධාරී කළමනාකරණ පද්ධතිය (Officer Admin Panel)</p>
+    <button onclick="logout()" class="absolute top-3 right-3 text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded font-semibold">Logout</button>
   </div>
 
-  <div class="flex flex-wrap gap-2 justify-center">
-    <button class="tab" onclick="tab('reg')">ලියාපදිංචිය</button>
-    <button class="tab" onclick="tab('pts')">ලකුණු / වැඩසටහන්</button>
-    <button class="tab" onclick="tab('mem')">සාමාජිකයින්</button>
-    <button class="tab" onclick="tab('prg')">වැඩසටහන් ලැයිස්තුව</button>
-  </div>
-  <div id="msg" class="text-sm font-medium text-center min-h-[1.25rem]"></div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-  <!-- ලියාපදිංචිය -->
-  <div id="t-reg" class="card max-w-xl mx-auto w-full">
-    <h2 class="text-lg font-bold text-blue-800 mb-2 border-b pb-2">නව සාමාජිකයෙකු ලියාපදිංචි කිරීම</h2>
-    <form id="regForm">
-      <label class="l">ලියාපදිංචි අංකය</label><input id="membershipId" required placeholder="YM-2026-1631" class="i font-mono uppercase">
-      <label class="l">සම්පූර්ණ නම</label><input id="fullName" required class="i">
-      <div class="grid grid-cols-2 gap-2">
-        <div><label class="l">ග්‍රාම නිලධාරී වසම</label><input id="gnDivision" required class="i"></div>
-        <div><label class="l">යෞවන සමාජය</label><input id="youthClub" required class="i"></div>
-      </div>
-      <label class="l">ඊමේල්</label><input type="email" id="email" required class="i">
-      <label class="l">ඡායාරූපය</label><input type="file" id="memberPhoto" accept="image/*" required class="i">
-      <label class="l">ID කාඩ් ලාංඡනය (එක් වරක් දැමුවොත් මතක තබා ගනී)</label><input type="file" id="cardLogo" accept="image/*" class="i">
-      <button id="submitBtn" class="b bg-blue-700 hover:bg-blue-800 w-full mt-4">සාමාජිකයා ඇතුළත් කර ID පත සදන්න</button>
-    </form>
-  </div>
-
-  <!-- ලකුණු -->
-  <div id="t-pts" class="card max-w-xl mx-auto w-full hidden">
-    <h2 class="text-lg font-bold text-blue-800 mb-2 border-b pb-2">වැඩසටහන් / රැස්වීම් ලකුණු ඇතුළත් කිරීම</h2>
-    <form id="pForm">
-      <label class="l">සාමාජික අංක (එකක් හෝ කිහිපයක් — space / comma / අලුත් පේළියකින් වෙන් කරන්න)</label>
-      <textarea id="pIds" rows="3" required class="i font-mono uppercase" placeholder="YM-2026-1631, YM-2026-1632"></textarea>
-      <div class="grid grid-cols-2 gap-2">
-        <div><label class="l">වර්ගය</label>
-          <select id="pKind" class="i"><option value="program">වැඩසටහනක් (+)</option><option value="meeting">රැස්වීමක් (+)</option><option value="deduct">ලකුණු කැපීම (−)</option></select></div>
-        <div><label class="l">ලකුණු ප්‍රමාණය</label><input type="number" id="pPts" value="5" min="0" class="i"></div>
-      </div>
-      <label class="l">වැඩසටහනේ / හේතුවේ නම</label><input id="pName" required class="i">
-      <label class="l">දිනය</label><input type="date" id="pDate" required class="i">
-      <label class="l">විස්තරය</label><textarea id="pDesc" rows="2" class="i"></textarea>
-      <button class="b bg-emerald-600 hover:bg-emerald-700 w-full mt-4">යාවත්කාලීන කරන්න</button>
-    </form>
-  </div>
-
-  <!-- සාමාජිකයින් -->
-  <div id="t-mem" class="card hidden">
-    <div class="flex flex-wrap gap-2 items-end mb-3">
-      <div class="flex-1 min-w-[180px]"><label class="l">සොයන්න (නම / ID / සමාජය / වසම)</label><input id="q" oninput="renderMembers()" class="i"></div>
-      <select id="sort" onchange="renderMembers()" class="i !w-auto"><option value="pts">ලකුණු අනුව</option><option value="name">නම අනුව</option></select>
-      <span class="text-xs text-slate-500 pb-2">මුළු: <b id="cnt">0</b></span>
+    <!-- ලියාපදිංචිය -->
+    <div class="card">
+      <h2 class="text-lg font-bold text-blue-800 mb-2 border-b pb-2">නව සාමාජිකයෙකු ලියාපදිංචි කිරීම</h2>
+      <form id="regForm">
+        <label class="l">ලියාපදිංචි අංකය</label><input id="membershipId" required placeholder="YM-2026-1631" class="i font-mono uppercase">
+        <label class="l">සම්පූර්ණ නම</label><input id="fullName" required class="i">
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="l">ග්‍රාම නිලධාරී වසම</label><input id="gnDivision" required class="i"></div>
+          <div><label class="l">යෞවන සමාජය</label><input id="youthClub" required class="i"></div>
+        </div>
+        <label class="l">ඊමේල්</label><input type="email" id="email" required class="i">
+        <label class="l">ඡායාරූපය</label><input type="file" id="memberPhoto" accept="image/*" required class="i">
+        <label class="l">ID කාඩ් ලාංඡනය (එක් වරක් දැම්මම මතක තබා ගනී)</label><input type="file" id="cardLogo" accept="image/*" class="i">
+        <button id="submitBtn" class="b bg-blue-700 hover:bg-blue-800 w-full mt-4">සාමාජිකයා ඇතුළත් කර ID පත සදන්න</button>
+      </form>
     </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-xs text-left">
-        <thead class="bg-slate-100"><tr><th class="p-2">#</th><th>ID</th><th>නම</th><th>සමාජය</th><th>නිළතලය</th><th>ලකුණු</th><th>වැඩ.</th><th>රැස්.</th></tr></thead>
-        <tbody id="mBody"></tbody>
-      </table>
-    </div>
-    <div id="mDetail" class="hidden mt-5 pt-4 border-t"></div>
-  </div>
 
-  <!-- වැඩසටහන් -->
-  <div id="t-prg" class="hidden space-y-2 max-w-3xl mx-auto w-full"><div id="prgList" class="space-y-2"></div></div>
+    <!-- ලකුණු -->
+    <div class="card">
+      <h2 class="text-lg font-bold text-blue-800 mb-2 border-b pb-2">වැඩසටහන්, නිළතල හා ලකුණු කළමනාකරණය</h2>
+      <form id="pointsForm">
+        <label class="l">සාමාජික අංකය</label>
+        <div class="flex gap-2">
+          <input id="searchId" placeholder="YM-2026-1631" class="i font-mono uppercase">
+          <button type="button" onclick="fetchMemberData()" class="b bg-slate-700 hover:bg-slate-900 mt-1 whitespace-nowrap">පරීක්ෂා කරන්න</button>
+        </div>
+        <div id="statsBox" class="hidden bg-blue-50 border border-blue-200 p-3 rounded-lg text-xs mt-3">
+          <p class="font-bold text-blue-900" id="infoName"></p>
+          <p class="text-slate-600" id="infoPosition"></p>
+          <div class="grid grid-cols-3 gap-2 pt-1 mt-1 border-t border-blue-200">
+            <p>ලකුණු: <b id="infoPoints" class="text-blue-700">0</b></p>
+            <p>වැඩසටහන්: <b id="infoPrograms">0</b></p>
+            <p>රැස්වීම්: <b id="infoMeetings">0</b></p>
+          </div>
+        </div>
+        <label class="l">දරන නිළතලය</label><input id="updatePosition" placeholder="සභාපති / ලේකම් / සාමාජික" class="i">
+        <label class="l">වැඩසටහනේ / රැස්වීමේ නම</label><input id="eventName" class="i">
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="l">දිනය</label><input type="date" id="eventDate" class="i"></div>
+          <div><label class="l">වර්ගය</label>
+            <select id="eventType" class="i"><option value="program">වැඩසටහනක්</option><option value="meeting">සම්මේලන රැස්වීමක්</option><option value="adjustment">ලකුණු සකස් කිරීම</option></select></div>
+        </div>
+        <label class="l">විස්තරය / හේතුව</label><textarea id="eventDesc" rows="2" class="i"></textarea>
+        <label class="l">ලකුණු වෙනස් කිරීම</label>
+        <div class="flex gap-1">
+          <select id="pointsAction" class="i !w-auto"><option value="add">+ ලබාදෙන්න</option><option value="deduct">− කපන්න</option><option value="set">= සකසන්න</option></select>
+          <input type="number" id="addPoints" value="5" min="0" class="i">
+        </div>
+        <div class="grid grid-cols-4 gap-1 mt-2">
+          <button type="button" onclick="qa(5)" class="bg-slate-100 border text-xs font-semibold py-1.5 rounded">+5</button>
+          <button type="button" onclick="qa(10)" class="bg-slate-100 border text-xs font-semibold py-1.5 rounded">+10</button>
+          <button type="button" onclick="qa(-5)" class="bg-red-50 border border-red-200 text-red-700 text-xs font-semibold py-1.5 rounded">−5</button>
+          <button type="button" onclick="qa(-10)" class="bg-red-50 border border-red-200 text-red-700 text-xs font-semibold py-1.5 rounded">−10</button>
+        </div>
+        <button class="b bg-emerald-600 hover:bg-emerald-700 w-full mt-4">යාවත්කාලීන කරන්න</button>
+      </form>
+      <div id="pointsMsg" class="mt-3 text-xs font-medium text-center"></div>
+      <div id="historyBox" class="hidden mt-3 pt-3 border-t">
+        <h3 class="text-sm font-bold text-slate-700 mb-2">ක්‍රියාකාරකම් ඉතිහාසය</h3>
+        <div id="activityList" class="max-h-48 overflow-y-auto text-xs space-y-1.5 bg-slate-50 rounded-lg p-2 border"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- ID Card -->
-  <div id="cardBox" class="card hidden text-center">
-    <p class="text-xs text-green-700 font-bold mb-3">✅ ID කාඩ් පත සූදානම්</p>
-    <div class="overflow-x-auto flex justify-center pb-2">
-      <div id="idCard" style="width:360px;height:220px;flex-shrink:0;background:#090d16;color:white;padding:14px;border-radius:12px;border:2px solid #fbbf24;display:flex;flex-direction:column;justify-content:space-between;text-align:left;box-sizing:border-box;">
+  <div id="resultSection" class="card hidden">
+    <p class="text-sm text-green-700 font-bold mb-3 text-center">✅ ID කාඩ් පත සූදානම්. PDF හෝ JPG ලෙස ඩවුන්ලෝඩ් කරන්න:</p>
+    <div class="flex justify-center mb-4 overflow-x-auto">
+      <div id="idCard" style="width:360px;height:220px;flex-shrink:0;background:#090d16;color:#fff;padding:14px;border-radius:12px;border:2px solid #fbbf24;display:flex;flex-direction:column;justify-content:space-between;text-align:left;box-sizing:border-box;overflow:hidden;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;">
         <div style="border-bottom:1px solid rgba(96,165,250,.4);padding-bottom:4px;display:flex;justify-content:space-between;align-items:center;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:28px;height:28px;background:white;border-radius:50%;overflow:hidden;"><img id="cardLogoImg" src="" alt="" style="width:100%;height:100%;object-fit:contain;"></div>
-            <div><h3 style="font-size:8px;font-weight:bold;color:#fde047;text-transform:uppercase;margin:0;">Divisional Federation of Youth Clubs Gampaha</h3>
+            <div style="width:28px;height:28px;background:#fff;border-radius:50%;overflow:hidden;flex-shrink:0;"><img id="cardLogoImg" alt="" style="width:100%;height:100%;object-fit:contain;"></div>
+            <div><h3 style="font-size:8px;font-weight:bold;color:#fde047;text-transform:uppercase;margin:0;line-height:1.2;">Divisional Federation of Youth Clubs Gampaha</h3>
             <p style="font-size:7px;color:#e2e8f0;text-transform:uppercase;margin:0;">Member ID Card</p></div>
           </div>
           <span style="font-size:7px;background:#fde047;color:#0f172a;font-weight:bold;padding:2px 6px;border-radius:4px;">Connect 2027</span>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0;gap:8px;">
-          <div style="width:70px;height:90px;background:#cbd5e1;border-radius:4px;border:1px solid #fde047;overflow:hidden;flex-shrink:0;"><img id="cardPhoto" src="" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-          <div style="flex:1;overflow:hidden;">
+          <div style="width:70px;height:90px;background:#cbd5e1;border-radius:4px;border:1px solid #fde047;overflow:hidden;flex-shrink:0;"><img id="cardPhoto" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
+          <div style="flex:1;overflow:hidden;min-width:0;">
             <p id="cardName" style="font-size:11px;font-weight:bold;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Name</p>
             <p style="font-size:8px;color:#cbd5e1;margin:0 0 2px;"><span style="color:#fde047;">Club:</span> <span id="cardClub"></span></p>
             <p style="font-size:8px;color:#cbd5e1;margin:0 0 2px;"><span style="color:#fde047;">GN:</span> <span id="cardGn"></span></p>
             <p id="cardId" style="font-size:9px;font-family:monospace;color:#fde047;font-weight:bold;margin:4px 0 0;">YM-0000</p>
           </div>
-          <div style="background:white;padding:4px;border-radius:6px;flex-shrink:0;width:68px;height:68px;"><img id="cardQrImg" src="" alt="" style="width:100%;height:100%;object-fit:contain;"></div>
+          <div style="background:#fff;padding:4px;border-radius:6px;flex-shrink:0;width:68px;height:68px;box-sizing:border-box;"><img id="cardQrImg" alt="" style="width:100%;height:100%;object-fit:contain;"></div>
         </div>
         <div style="border-top:1px solid rgba(96,165,250,.4);padding-top:4px;display:flex;justify-content:space-between;font-size:6px;color:#cbd5e1;">
           <span>Official Digital ID</span><span>Divisional Federation of YOUTH CLUBS - Gampaha</span>
         </div>
       </div>
     </div>
-    <div class="flex gap-2 justify-center mt-3">
-      <button onclick="dl('pdf')" class="b bg-slate-800 hover:bg-black">📄 PDF</button>
-      <button onclick="dl('jpg')" class="b bg-indigo-700 hover:bg-indigo-800">🖼️ JPG (High Quality)</button>
+    <div class="flex flex-wrap justify-center gap-3">
+      <button id="pdfBtn" onclick="dl('pdf')" class="b bg-slate-800 hover:bg-black">📄 PDF ඩවුන්ලෝඩ්</button>
+      <button id="jpgBtn" onclick="dl('jpg')" class="b bg-indigo-700 hover:bg-indigo-800">🖼️ JPG ඩවුන්ලෝඩ් (High Quality)</button>
     </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="card">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b pb-3">
+      <h2 class="text-lg font-bold text-blue-800">ලකුණු පුවරුව හා සියලු සාමාජිකයින්</h2>
+      <div class="flex gap-2">
+        <button onclick="loadLeaderboard()" class="b bg-blue-600 hover:bg-blue-700 !py-1.5">🔄</button>
+        <input id="leaderSearch" placeholder="නම / ID / සමාජය..." class="i !mt-0 !w-48" oninput="filterLeaderboard()">
+      </div>
+    </div>
+    <div id="topThree" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5"></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-slate-100 text-xs uppercase"><tr>
+          <th class="p-2">#</th><th>නම</th><th>ID</th><th>නිළතලය</th><th>සමාජය</th><th class="text-right">ලකුණු</th><th class="text-center">වැඩ.</th><th class="text-center">රැස්.</th><th></th></tr></thead>
+        <tbody id="leaderboardBody" class="divide-y"></tbody>
+      </table>
+    </div>
+    <p id="leaderCount" class="text-xs text-slate-500 mt-3 text-right"></p>
   </div>
 </div>
 
 <script>
-  async function login() {
-  const { error } = await db.auth.signInWithPassword({ email: lEmail.value, password: lPass.value });
-  error ? say('❌ Email හෝ password වැරදියි', false) : start();
+const db = supabase.createClient('https://mlnojkidgdcvxbvhaqok.supabase.co', 'sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W');
+const BASE = "https://federationofyouthclubs-gampaha.github.io/YouthClubMember/profile.html?id=";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
+const b64 = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+const out = (t, ok = true) => $('pointsMsg').innerHTML = `<span class="${ok ? 'text-green-600' : 'text-red-600'}">${t}</span>`;
+let cache = [];
+
+/* ---------- Login ---------- */
+async function login() {
+  $('lMsg').innerText = '';
+  const { error } = await db.auth.signInWithPassword({ email: $('lEmail').value.trim(), password: $('lPass').value });
+  if (error) $('lMsg').innerText = 'Email හෝ password වැරදියි'; else start();
 }
 async function logout() { await db.auth.signOut(); location.reload(); }
-
 async function start() {
   const { data: { session } } = await db.auth.getSession();
   $('loginBox').classList.toggle('hidden', !!session);
-  $('app').classList.toggle('hidden', !session);   // දැනට තියෙන ඔක්කොම <div id="app"> එකක් ඇතුළට දාන්න
-  if (session) loadAll();
-}
-start();   // පිටුවේ අන්තිමට තියෙන loadAll() වෙනුවට
-
-const db = supabase.createClient('https://mlnojkidgdcvxbvhaqok.supabase.co','sb_publishable_FaHnMWAtgbJQtv0eK7nfUQ_neppKu5W');
-const BASE = "https://federationofyouthclubs-gampaha.github.io/YouthClubMember/profile.html?id=";
-const COLS = 'membership_id,full_name,position,gn_division,youth_club,email,points,programs_count,meetings_count,activity_history';
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
-const hist = m => Array.isArray(m.activity_history) ? m.activity_history : [];
-const sg = n => (n > 0 ? '+' : '') + n;
-const say = (t, ok = true) => $('msg').innerHTML = `<span class="${ok ? 'text-green-600' : 'text-red-600'}">${t}</span>`;
-const b64 = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
-let M = [], cur = null;
-
-function tab(t) {
-  ['reg','pts','mem','prg'].forEach(x => $('t-' + x).classList.toggle('hidden', x !== t));
-  if (t === 'mem') renderMembers();
-  if (t === 'prg') renderPrograms();
+  $('app').classList.toggle('hidden', !session);
+  if (session) loadLeaderboard();
 }
 
-async function loadAll() {
-  const { data, error } = await db.from('youth_members').select(COLS).order('membership_id');
-  if (error) return say('දත්ත ලබාගත නොහැක: ' + esc(error.message), false);
-  M = data; renderMembers(); renderPrograms();
+/* ---------- ID Card ---------- */
+function setLogo(d) { try { localStorage.setItem('cardLogo', d); } catch {} $('cardLogoImg').src = d; }
+try { const l = localStorage.getItem('cardLogo'); if (l) $('cardLogoImg').src = l; } catch {}
+
+function fillCard(m) {
+  $('cardName').innerText = m.full_name; $('cardClub').innerText = m.youth_club || '-';
+  $('cardGn').innerText = m.gn_division || '-'; $('cardId').innerText = m.membership_id;
+  $('cardPhoto').src = m.photo || '';
+  const q = qrcode(0, 'M'); q.addData(BASE + encodeURIComponent(m.membership_id)); q.make();
+  $('cardQrImg').src = q.createDataURL(10, 0);   // local QR - no network, no CORS problems
+  $('resultSection').classList.remove('hidden');
 }
 
-/* ---------- සාමාජිකයින් ---------- */
-function renderMembers() {
-  const q = $('q').value.trim().toLowerCase(), s = $('sort').value;
-  const r = M.filter(m => [m.membership_id, m.full_name, m.youth_club, m.gn_division].join(' ').toLowerCase().includes(q));
-  r.sort((a, b) => s === 'name' ? a.full_name.localeCompare(b.full_name) : (b.points || 0) - (a.points || 0));
-  $('cnt').innerText = r.length;
-  $('mBody').innerHTML = r.map((m, i) => `<tr class="border-t hover:bg-blue-50 cursor-pointer" data-id="${esc(m.membership_id)}" onclick="openM(this.dataset.id)">
-    <td class="p-2">${i + 1}</td><td class="font-mono">${esc(m.membership_id)}</td><td>${esc(m.full_name)}</td><td>${esc(m.youth_club)}</td>
-    <td>${esc(m.position)}</td><td class="font-bold text-blue-700">${m.points || 0}</td><td>${m.programs_count || 0}</td><td>${m.meetings_count || 0}</td></tr>`).join('')
-    || '<tr><td colspan="8" class="p-3 text-center">සාමාජිකයින් නැත</td></tr>';
+const waitImg = i => (!i.getAttribute('src') || (i.complete && i.naturalWidth > 0)) ? Promise.resolve()
+  : new Promise(r => { i.onload = i.onerror = r; setTimeout(r, 8000); });
+
+async function snap() {
+  const card = $('idCard');
+  await Promise.all([...card.querySelectorAll('img')].map(waitImg));
+  if (document.fonts) await document.fonts.ready;
+  return html2canvas(card, { scale: 4, useCORS: true, backgroundColor: '#090d16', logging: false, scrollX: 0, scrollY: -window.scrollY });
 }
 
-function openM(id) {
-  const m = M.find(x => x.membership_id === id); if (!m) return;
-  cur = m;
-  const box = $('mDetail'); box.classList.remove('hidden');
-  box.innerHTML = `
-    <div class="flex justify-between items-center"><h3 class="font-bold text-blue-900">${esc(m.full_name)} <span class="font-mono text-xs text-slate-500">${esc(m.membership_id)}</span></h3>
-      <span class="text-sm">මුළු ලකුණු: <b class="text-blue-700">${m.points || 0}</b></span></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-3">
-      <div><label class="l">නම</label><input id="e_name" class="i" value="${esc(m.full_name)}"></div>
-      <div><label class="l">නිළතලය</label><input id="e_pos" class="i" value="${esc(m.position || 'සාමාජික')}"></div>
-      <div><label class="l">යෞවන සමාජය</label><input id="e_club" class="i" value="${esc(m.youth_club)}"></div>
-      <div><label class="l">ග්‍රාම නිලධාරී වසම</label><input id="e_gn" class="i" value="${esc(m.gn_division)}"></div>
-      <div><label class="l">ඊමේල්</label><input id="e_mail" class="i" value="${esc(m.email)}"></div>
-      <div><label class="l">අලුත් ඡායාරූපය (අවශ්‍ය නම් පමණක්)</label><input type="file" id="e_photo" accept="image/*" class="i"></div>
-    </div>
-    <div class="flex gap-2 mt-3">
-      <button onclick="saveM()" class="b bg-blue-700 hover:bg-blue-800">සුරකින්න</button>
-      <button onclick="showCard(cur)" class="b bg-amber-600 hover:bg-amber-700">ID කාඩ් පත</button>
-    </div>
-    <h4 class="font-bold text-sm mt-4 mb-1">ලකුණු ලැබූ / කැපූ වැඩසටහන් (${hist(m).length})</h4>
-    <div class="space-y-1 text-xs">${hist(m).map((a, i) => `<div class="flex justify-between gap-2 bg-slate-50 rounded p-2">
-      <span>${esc(a.date)} · <b>${esc(a.name)}</b> <i class="text-slate-500">(${esc(a.type)})</i>${a.description ? ' — ' + esc(a.description) : ''}</span>
-      <span class="whitespace-nowrap"><b class="${a.points < 0 ? 'text-red-600' : 'text-green-700'}">${sg(a.points || 0)}</b>
-      <button onclick="delAct(${i})" class="ml-2 text-red-600 font-bold">✕</button></span></div>`).join('') || '<p class="text-slate-500">සටහන් නැත</p>'}</div>`;
-  box.scrollIntoView({ behavior: 'smooth' });
+async function dl(type) {
+  const btn = $(type + 'Btn'), old = btn.innerText;
+  btn.disabled = true; btn.innerText = 'සකසමින්...';
+  try {
+    const c = await snap();
+    const name = 'Youth_ID_' + $('cardId').innerText.replace(/[^\w-]/g, '_');
+    const saveJpg = () => c.toBlob(b => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name + '.jpg';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    }, 'image/jpeg', 0.95);
+    if (type === 'jpg') saveJpg();
+    else {
+      try {
+        const pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: [90, 55] });
+        pdf.addImage(c.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, 90, 55);
+        pdf.save(name + '.pdf');
+      } catch (e) { console.error(e); saveJpg(); alert('PDF සෑදීමට නොහැකි වූ නිසා JPG එකක් ඩවුන්ලෝඩ් කරන ලදී.'); }
+    }
+  } catch (err) { console.error(err); alert('දෝෂයක්: ' + (err.message || err)); }
+  btn.disabled = false; btn.innerText = old;
 }
-
-async function saveM() {
-  const u = { full_name: $('e_name').value.trim(), youth_club: $('e_club').value.trim(), gn_division: $('e_gn').value.trim(),
-    email: $('e_mail').value.trim(), position: $('e_pos').value.trim() || 'සාමාජික' };
-  const f = $('e_photo').files[0]; if (f) u.photo = await b64(f);
-  const { error } = await db.from('youth_members').update(u).eq('membership_id', cur.membership_id);
-  if (error) return say('❌ ' + esc(error.message), false);
-  say('✅ තොරතුරු යාවත්කාලීන විය'); await loadAll(); openM(cur.membership_id);
-}
-
-async function delAct(i) {
-  if (!confirm('මෙම සටහන ඉවත් කර ලකුණු නැවත සකස් කරන්නද?')) return;
-  const { data: m } = await db.from('youth_members').select(COLS).eq('membership_id', cur.membership_id).single();
-  const h = hist(m), [a] = h.splice(i, 1); if (!a) return;
-  const up = { activity_history: h, points: (m.points || 0) - (a.points || 0) };
-  if (a.type === 'වැඩසටහන') up.programs_count = Math.max(0, (m.programs_count || 0) - 1);
-  if (a.type === 'රැස්වීම') up.meetings_count = Math.max(0, (m.meetings_count || 0) - 1);
-  const { error } = await db.from('youth_members').update(up).eq('membership_id', m.membership_id);
-  if (error) return say('❌ ' + esc(error.message), false);
-  say('✅ සටහන ඉවත් කර ලකුණු සකස් විය'); await loadAll(); openM(m.membership_id);
-}
-
-/* ---------- වැඩසටහන් ලැයිස්තුව ---------- */
-function renderPrograms() {
-  const g = {};
-  M.forEach(m => hist(m).forEach(a => { const k = [a.date, a.name, a.type].join('|'); (g[k] = g[k] || { a, l: [] }).l.push({ m, p: a.points || 0 }); }));
-  const r = Object.values(g).sort((x, y) => (y.a.date || '').localeCompare(x.a.date || ''));
-  $('prgList').innerHTML = r.map(({ a, l }) => `<details class="bg-white rounded-lg shadow p-3">
-    <summary class="cursor-pointer text-sm font-semibold">${esc(a.date)} — ${esc(a.name)} <span class="text-xs text-slate-500">(${esc(a.type)} · ${l.length} දෙනා)</span></summary>
-    <div class="mt-2 text-xs space-y-1">${a.description ? `<p class="italic">${esc(a.description)}</p>` : ''}
-    ${l.map(({ m, p }) => `<p>${esc(m.membership_id)} — ${esc(m.full_name)} (${esc(m.youth_club)}) <b>${sg(p)}</b></p>`).join('')}</div></details>`).join('')
-    || '<p class="text-sm text-center">තවම වැඩසටහන් නැත</p>';
-}
-
-/* ---------- ලකුණු ඇතුළත් කිරීම (කිහිප දෙනෙකුට එකවර) ---------- */
-$('pForm').onsubmit = async e => {
-  e.preventDefault();
-  const ids = [...new Set($('pIds').value.toUpperCase().split(/[\s,;]+/).filter(Boolean))];
-  const kind = $('pKind').value, name = $('pName').value.trim(), date = $('pDate').value, desc = $('pDesc').value.trim();
-  const pts = Math.abs(parseInt($('pPts').value) || 0) * (kind === 'deduct' ? -1 : 1);
-  const label = { program: 'වැඩසටහන', meeting: 'රැස්වීම', deduct: 'ලකුණු කැපීම' }[kind];
-  const { data, error } = await db.from('youth_members').select(COLS).in('membership_id', ids);
-  if (error) return say('❌ ' + esc(error.message), false);
-  const miss = ids.filter(i => !data.some(m => m.membership_id === i));
-  const dup = [], todo = data.filter(m => {
-    if (kind !== 'deduct' && hist(m).some(a => a.name === name && a.date === date)) { dup.push(m.membership_id); return false; }
-    return true;
-  });
-  const rs = await Promise.all(todo.map(m => {
-    const h = hist(m); h.unshift({ name, date, type: label, description: desc, points: pts });
-    return db.from('youth_members').update({ points: (m.points || 0) + pts,
-      programs_count: (m.programs_count || 0) + (kind === 'program' ? 1 : 0),
-      meetings_count: (m.meetings_count || 0) + (kind === 'meeting' ? 1 : 0), activity_history: h }).eq('membership_id', m.membership_id);
-  }));
-  const bad = rs.filter(r => r.error).length;
-  say(`✅ ${todo.length - bad} දෙනෙකුට යාවත්කාලීන විය` + (dup.length ? ` | ⚠️ දැනටමත් ඇති (මග හැරියා): ${esc(dup.join(', '))}` : '')
-    + (miss.length ? ` | ❌ හමු නොවූ: ${esc(miss.join(', '))}` : ''), !bad && !miss.length);
-  if (!bad) { $('pName').value = ''; $('pDesc').value = ''; }
-  loadAll();
-};
 
 /* ---------- ලියාපදිංචිය ---------- */
-$('regForm').onsubmit = async e => {
+$('regForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const btn = $('submitBtn'); btn.disabled = true;
+  const btn = $('submitBtn'), old = btn.innerText; btn.disabled = true; btn.innerText = 'සකසමින්...';
   try {
     const lf = $('cardLogo').files[0]; if (lf) setLogo(await b64(lf));
     const m = { membership_id: $('membershipId').value.trim().toUpperCase(), full_name: $('fullName').value.trim(), position: 'සාමාජික',
@@ -277,54 +236,105 @@ $('regForm').onsubmit = async e => {
       photo: await b64($('memberPhoto').files[0]), points: 0, programs_count: 0, meetings_count: 0, activity_history: [] };
     const { error } = await db.from('youth_members').insert([m]);
     if (error) throw error;
-    say('✅ සාමාජිකයා සාර්ථකව ලියාපදිංචි විය!'); e.target.reset();
-    await showCard(m); loadAll();
-  } catch (err) { say('❌ දෝෂයක්: ' + esc(err.message), false); }
-  btn.disabled = false;
-};
+    fillCard(m); e.target.reset(); loadLeaderboard();
+    alert('සාමාජිකයා සාර්ථකව ලියාපදිංචි විය!');
+  } catch (err) { alert('දෝෂයක් සිදු විය: ' + err.message); }
+  btn.disabled = false; btn.innerText = old;
+});
 
-/* ---------- ID Card ---------- */
-function setLogo(d) { try { localStorage.setItem('logo', d); } catch {} $('cardLogoImg').src = d; }
-try { const l = localStorage.getItem('logo'); if (l) $('cardLogoImg').src = l; } catch {}
-
-async function setQRCode(url) {
-  const api = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=0&data=${encodeURIComponent(url)}`;
-  try { $('cardQrImg').src = await b64(await (await fetch(api)).blob()); }
-  catch { $('cardQrImg').crossOrigin = 'anonymous'; $('cardQrImg').src = api; }
+/* ---------- සාමාජිකයා සොයා ගැනීම ---------- */
+async function fetchMemberData() {
+  const id = $('searchId').value.trim().toUpperCase();
+  if (!id) return alert('කරුණාකර සාමාජික අංකයක් ඇතුළත් කරන්න!');
+  const { data, error } = await db.from('youth_members').select('*').eq('membership_id', id).single();
+  if (error || !data) { $('statsBox').classList.add('hidden'); $('historyBox').classList.add('hidden'); return out('❌ සාමාජිකයෙකු හමු නොවීය!', false); }
+  $('infoName').innerText = 'නම: ' + data.full_name;
+  $('infoPosition').innerText = 'නිළතලය: ' + (data.position || 'සාමාජික');
+  $('infoPoints').innerText = data.points || 0; $('infoPrograms').innerText = data.programs_count || 0; $('infoMeetings').innerText = data.meetings_count || 0;
+  $('updatePosition').value = data.position || 'සාමාජික';
+  $('statsBox').classList.remove('hidden');
+  renderHistory(data.activity_history);
+  fillCard(data);
+  out('✅ තොරතුරු ලබාගන්නා ලදී.');
 }
 
-async function showCard(m) {
-  if (!m.photo) {
-    const { data } = await db.from('youth_members').select('photo').eq('membership_id', m.membership_id).single();
-    m.photo = data?.photo || '';
+function renderHistory(h) {
+  h = Array.isArray(h) ? h : [];
+  $('historyBox').classList.remove('hidden');
+  $('activityList').innerHTML = h.slice(0, 20).map(a => {
+    const p = a.points || 0;
+    return `<div class="flex justify-between gap-2 bg-white p-2 rounded border"><div class="min-w-0"><p class="font-semibold truncate">${esc(a.name)}</p>
+      <p class="text-slate-500">${esc(a.date)} · ${esc(a.type)}</p>${a.description ? `<p class="text-slate-400 truncate">${esc(a.description)}</p>` : ''}</div>
+      <b class="${p >= 0 ? 'text-emerald-600' : 'text-red-600'}">${p >= 0 ? '+' : ''}${p}</b></div>`;
+  }).join('') || '<p class="text-center text-slate-400 py-2">ඉතිහාසයක් නැත</p>';
+}
+
+function qa(v) { $('pointsAction').value = v < 0 ? 'deduct' : 'add'; $('addPoints').value = Math.abs(v); }
+
+/* ---------- ලකුණු යාවත්කාලීන ---------- */
+$('pointsForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = $('searchId').value.trim().toUpperCase();
+  if (!id) return out('❌ සාමාජික අංකය ඇතුළත් කරන්න', false);
+  const { data, error } = await db.from('youth_members').select('*').eq('membership_id', id).single();
+  if (error || !data) return out('❌ සාමාජිකයෙකු හමු නොවීය!', false);
+
+  const act = $('pointsAction').value, v = parseInt($('addPoints').value) || 0;
+  const type = $('eventType').value, name = $('eventName').value.trim();
+  const old = data.points || 0;
+  const np = act === 'add' ? old + v : act === 'deduct' ? Math.max(0, old - v) : Math.max(0, v);
+  const delta = np - old;
+  let progs = data.programs_count || 0, meets = data.meetings_count || 0;
+  const h = Array.isArray(data.activity_history) ? data.activity_history : [];
+
+  if (name || delta !== 0) {
+    if (name && type === 'program') progs++;
+    if (name && type === 'meeting') meets++;
+    h.unshift({ name: name || (act === 'deduct' ? 'ලකුණු කපා හැරීම' : act === 'set' ? 'ලකුණු සකස් කිරීම' : 'ලකුණු ලබාදීම'),
+      date: $('eventDate').value || new Date().toISOString().slice(0, 10),
+      type: type === 'program' ? 'වැඩසටහන' : type === 'meeting' ? 'රැස්වීම' : 'ලකුණු සකස් කිරීම',
+      description: $('eventDesc').value.trim(), points: delta });
   }
-  $('cardName').innerText = m.full_name; $('cardClub').innerText = m.youth_club;
-  $('cardGn').innerText = m.gn_division; $('cardId').innerText = m.membership_id;
-  $('cardPhoto').src = m.photo;
-  await setQRCode(BASE + encodeURIComponent(m.membership_id));
-  $('cardBox').classList.remove('hidden');
-  $('cardBox').scrollIntoView({ behavior: 'smooth' });
+  const { error: ue } = await db.from('youth_members').update({
+    position: $('updatePosition').value.trim() || 'සාමාජික', points: np, programs_count: progs, meetings_count: meets, activity_history: h }).eq('membership_id', id);
+  if (ue) return out('❌ අසාර්ථකයි: ' + esc(ue.message), false);
+  ['eventName', 'eventDate', 'eventDesc'].forEach(k => $(k).value = '');
+  $('addPoints').value = 5; $('pointsAction').value = 'add';
+  await fetchMemberData();
+  out(`✅ ${esc(data.full_name)} යාවත්කාලීන විය! (${old} → ${np})`);
+  loadLeaderboard();
+});
+
+/* ---------- Leaderboard ---------- */
+async function loadLeaderboard() {
+  $('leaderboardBody').innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500">පූරණය වෙමින්...</td></tr>';
+  const { data, error } = await db.from('youth_members')
+    .select('membership_id,full_name,position,youth_club,points,programs_count,meetings_count').order('points', { ascending: false });
+  if (error) { $('leaderboardBody').innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500">${esc(error.message)}</td></tr>`; return; }
+  cache = data || []; filterLeaderboard(); renderTop(cache);
 }
 
-const waitImg = i => (!i.getAttribute('src') || i.complete) ? Promise.resolve() : new Promise(r => { i.onload = i.onerror = r; setTimeout(r, 8000); });
-
-async function dl(type) {
-  try {
-    const card = $('idCard');
-    await Promise.all([...card.querySelectorAll('img')].map(waitImg));
-    const c = await html2canvas(card, { scale: 4, useCORS: true, backgroundColor: '#090d16', scrollX: 0, scrollY: -window.scrollY });
-    const name = 'Youth_ID_' + $('cardId').innerText.replace(/[^\w-]/g, '_');
-    if (type === 'jpg') {
-      c.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name + '.jpg'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); }, 'image/jpeg', 0.95);
-    } else {
-      const pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'px', format: [360, 220] });
-      pdf.addImage(c.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, 360, 220);
-      pdf.save(name + '.pdf');
-    }
-  } catch (err) { say('❌ Download අසාර්ථකයි: ' + esc(err.message), false); }
+function renderTop(ms) {
+  const medals = ['🥇', '🥈', '🥉'], cl = ['bg-amber-50 border-amber-300', 'bg-slate-50 border-slate-300', 'bg-orange-50 border-orange-200'];
+  $('topThree').innerHTML = ms.slice(0, 3).map((m, i) => `<div class="rounded-xl border-2 ${cl[i]} p-3 flex items-center gap-3"><span class="text-2xl">${medals[i]}</span>
+    <div class="min-w-0 flex-1"><p class="font-bold truncate text-sm">${esc(m.full_name)}</p><p class="text-xs text-slate-500 font-mono">${esc(m.membership_id)}</p>
+    <p class="text-xs text-slate-600">${esc(m.position || 'සාමාජික')} · ${esc(m.youth_club)}</p></div><p class="text-xl font-bold text-blue-700">${m.points || 0}</p></div>`).join('');
 }
 
-loadAll();
+function filterLeaderboard() {
+  const q = $('leaderSearch').value.trim().toLowerCase();
+  const r = cache.filter(m => !q || [m.full_name, m.membership_id, m.youth_club, m.position].join(' ').toLowerCase().includes(q));
+  $('leaderboardBody').innerHTML = r.map((m, i) => `<tr class="hover:bg-slate-50"><td class="p-2 text-slate-500">${i + 1}</td><td class="font-medium">${esc(m.full_name)}</td>
+    <td class="font-mono text-xs text-blue-700">${esc(m.membership_id)}</td><td class="text-xs">${esc(m.position || 'සාමාජික')}</td><td class="text-xs">${esc(m.youth_club)}</td>
+    <td class="text-right font-bold text-blue-700">${m.points || 0}</td><td class="text-center text-xs">${m.programs_count || 0}</td><td class="text-center text-xs">${m.meetings_count || 0}</td>
+    <td class="text-center"><button data-id="${esc(m.membership_id)}" onclick="pick(this.dataset.id)" class="text-xs bg-slate-700 hover:bg-slate-900 text-white px-2 py-1 rounded font-semibold">කළමනාකරණය</button></td></tr>`).join('')
+    || '<tr><td colspan="9" class="p-6 text-center text-slate-500">සාමාජිකයින් හමු නොවීය</td></tr>';
+  $('leaderCount').innerText = `සාමාජිකයින් ${r.length} ක්`;
+}
+
+function pick(id) { $('searchId').value = id; fetchMemberData(); $('pointsForm').scrollIntoView({ behavior: 'smooth' }); }
+
+start();
 </script>
 </body>
 </html>
